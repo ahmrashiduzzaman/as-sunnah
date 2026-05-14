@@ -7,2305 +7,902 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root {
-    --bg-void: #050a08;
-    --bg-deep: #081210;
-    --bg-card: #0d1f18;
-    --bg-card2: #112218;
-    --border: #1a3d2a;
-    --border-bright: #2a6644;
-    --green-dim: #1b5e20;
-    --green-main: #2e7d32;
-    --green-bright: #43a047;
-    --green-glow: #66bb6a;
-    --gold: #f9a825;
-    --gold-dim: #f57f17;
-    --red: #e53935;
-    --red-glow: #ff5252;
-    --amber: #ff8f00;
-    --text-primary: #e8f5e9;
-    --text-secondary: #81c784;
-    --text-muted: #4caf50;
-    --text-dim: #2e7d32;
-    --mono: 'IBM Plex Mono', monospace;
-    --arabic: 'Cairo', sans-serif;
-    --serif: 'Amiri', serif;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg-void);
-    color: var(--text-primary);
-    font-family: var(--arabic);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(46,125,50,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(46,125,50,0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Radial glow center */
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 800px; height: 400px;
-    background: radial-gradient(ellipse, rgba(46,125,50,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrapper { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 0 16px; }
-
-  /* ═══════════════ HEADER ═══════════════ */
-  header {
-    border-bottom: 1px solid var(--border);
-    background: rgba(5,10,8,0.95);
-    backdrop-filter: blur(12px);
-    position: sticky; top: 0; z-index: 100;
-    padding: 12px 24px;
-  }
-
-  .header-inner {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 16px; flex-wrap: wrap;
-  }
-
-  .logo-block { display: flex; align-items: center; gap: 14px; }
-
-  .logo-icon {
-    width: 44px; height: 44px;
-    background: linear-gradient(135deg, var(--green-main), var(--green-dim));
-    border: 1px solid var(--border-bright);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    box-shadow: 0 0 20px rgba(46,125,50,0.4);
-  }
-
-  .logo-text { line-height: 1.2; }
-  .logo-title { font-family: var(--arabic); font-weight: 700; font-size: 17px; color: var(--text-primary); letter-spacing: 0.5px; }
-  .logo-sub { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
-
-  .header-status { display: flex; align-items: center; gap: 8px; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-glow); box-shadow: 0 0 8px var(--green-glow); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .status-text { font-family: var(--mono); font-size: 11px; color: var(--green-glow); letter-spacing: 1px; }
-
-  .header-right { display: flex; align-items: center; gap: 12px; }
-
-  .live-clock {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-secondary);
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 5px 12px;
-    border-radius: 6px;
-    letter-spacing: 1px;
-  }
-
-  .lang-toggle {
-    display: flex; gap: 4px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px;
-  }
-
-  .lang-btn {
-    font-family: var(--arabic);
-    font-size: 12px; font-weight: 600;
-    padding: 5px 14px;
-    border-radius: 6px;
-    border: none; cursor: pointer;
-    transition: all 0.2s;
-    color: var(--text-muted);
-    background: transparent;
-  }
-
-  .lang-btn.active {
-    background: var(--green-main);
-    color: #fff;
-    box-shadow: 0 0 12px rgba(46,125,50,0.5);
-  }
-
-  /* ═══════════════ STATS ROW ═══════════════ */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    padding: 20px 0 0;
-  }
-
-  .stat-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.3s;
-  }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--accent-color, var(--green-main));
-  }
-
-  .stat-card:hover { border-color: var(--border-bright); }
-
-  .stat-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; font-family: var(--mono); }
-  .stat-value { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--text-primary); line-height: 1; }
-  .stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
-  .stat-icon { position: absolute; right: 16px; top: 16px; font-size: 24px; opacity: 0.15; }
-
-  /* ═══════════════ SECTION TITLE ═══════════════ */
-  .section-title {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--text-muted); font-family: var(--mono);
-    margin-bottom: 12px;
-  }
-
-  .section-title::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
-
-  /* ═══════════════ MAIN GRID ═══════════════ */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 340px 1fr 320px;
-    gap: 14px;
-    padding: 20px 0;
-    align-items: start;
-  }
-
-  .panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-  }
-
-  .panel-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(255,255,255,0.02);
-  }
-
-  .panel-title { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary); font-family: var(--mono); }
-  .panel-badge { font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 20px; }
-  .badge-green { background: rgba(46,125,50,0.3); color: var(--green-glow); border: 1px solid var(--green-main); }
-  .badge-gold { background: rgba(249,168,37,0.2); color: var(--gold); border: 1px solid var(--gold-dim); }
-  .badge-red { background: rgba(229,57,53,0.2); color: var(--red-glow); border: 1px solid var(--red); }
-
-  .panel-body { padding: 18px; }
-
-  /* ═══════════════ DONATION FORM ═══════════════ */
-  .form-group { margin-bottom: 14px; }
-
-  .form-label {
-    display: block;
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--text-muted); font-family: var(--mono);
-    margin-bottom: 6px;
-  }
-
-  .form-input {
-    width: 100%;
-    background: var(--bg-deep);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: var(--arabic);
-    font-size: 13px;
-    color: var(--text-primary);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-  }
-
-  .form-input:focus {
-    border-color: var(--green-main);
-    box-shadow: 0 0 0 3px rgba(46,125,50,0.15);
-  }
-
-  .form-input::placeholder { color: var(--text-dim); font-size: 12px; }
-
-  select.form-input option { background: var(--bg-deep); }
-
-  .btn {
-    width: 100%; padding: 12px;
-    border: none; border-radius: 8px;
-    font-family: var(--arabic); font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, var(--green-main), var(--green-dim));
-    color: #fff;
-    box-shadow: 0 0 20px rgba(46,125,50,0.3);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 30px rgba(46,125,50,0.5);
-  }
-
-  .btn-primary:active { transform: translateY(0); }
-
-  .btn-danger {
-    background: rgba(229,57,53,0.15);
-    color: var(--red-glow);
-    border: 1px solid var(--red);
-    margin-top: 10px;
-  }
-
-  .btn-danger:hover { background: rgba(229,57,53,0.25); }
-
-  .btn-gold {
-    background: rgba(249,168,37,0.15);
-    color: var(--gold);
-    border: 1px solid var(--gold-dim);
-    margin-top: 10px;
-  }
-
-  .btn-gold:hover { background: rgba(249,168,37,0.25); }
-
-  /* ═══════════════ HASH DISPLAY ═══════════════ */
-  .hash-display {
-    background: var(--bg-deep);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 14px;
-    font-family: var(--mono);
-  }
-
-  .hash-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
-  .hash-value { font-size: 10px; color: var(--green-glow); word-break: break-all; line-height: 1.6; }
-  .hash-value.tampered { color: var(--red-glow); animation: flicker 0.3s steps(2) infinite; }
-  @keyframes flicker { 0%{opacity:1} 50%{opacity:0.6} }
-
-  /* ═══════════════ LEDGER ═══════════════ */
-  .ledger-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: var(--mono); }
-
-  .ledger-table th {
-    padding: 8px 12px;
-    text-align: left;
-    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--text-dim);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  .ledger-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(26,61,42,0.5);
-    color: var(--text-secondary);
-    vertical-align: middle;
-  }
-
-  .ledger-table tr:hover td { background: rgba(46,125,50,0.05); }
-
-  .ledger-table tr.tampered-row td { background: rgba(229,57,53,0.08); }
-  .ledger-table tr.tampered-row { animation: row-flash 0.5s 3; }
-  @keyframes row-flash { 0%,100%{background:rgba(229,57,53,0.08)} 50%{background:rgba(229,57,53,0.2)} }
-
-  .hash-short {
-    font-size: 10px; color: var(--green-glow);
-    cursor: pointer;
-    position: relative;
-  }
-
-  .hash-short.invalid { color: var(--red-glow); }
-
-  .risk-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600;
-  }
-
-  .risk-low { background: rgba(46,125,50,0.25); color: var(--green-glow); border: 1px solid var(--green-main); }
-  .risk-mid { background: rgba(255,143,0,0.2); color: var(--amber); border: 1px solid var(--amber); }
-  .risk-high { background: rgba(229,57,53,0.25); color: var(--red-glow); border: 1px solid var(--red); animation: pulse 1s infinite; }
-
-  .pii-masked { color: var(--gold); font-size: 10px; }
-
-  .chain-valid { color: var(--green-glow); font-size: 14px; }
-  .chain-broken { color: var(--red-glow); font-size: 14px; animation: spin 0.5s linear; }
-  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-
-  .amount-cell { color: var(--text-primary); font-weight: 600; }
-
-  .empty-ledger {
-    text-align: center; padding: 40px;
-    color: var(--text-dim); font-size: 12px; font-family: var(--mono);
-  }
-
-  /* ═══════════════ TERMINAL ═══════════════ */
-  .terminal {
-    background: #020805;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    height: 220px;
-    overflow-y: auto;
-    font-family: var(--mono);
-    font-size: 10.5px;
-    line-height: 1.8;
-  }
-
-  .terminal::-webkit-scrollbar { width: 4px; }
-  .terminal::-webkit-scrollbar-track { background: transparent; }
-  .terminal::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
-
-  .log-line { display: flex; gap: 8px; }
-  .log-time { color: var(--text-dim); white-space: nowrap; }
-  .log-info { color: var(--green-glow); }
-  .log-warn { color: var(--amber); }
-  .log-err { color: var(--red-glow); }
-  .log-gold { color: var(--gold); }
-
-  /* ═══════════════ RISK METER ═══════════════ */
-  .risk-meter-container { margin-top: 12px; }
-  .risk-label-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-  .risk-val { font-family: var(--mono); font-size: 22px; font-weight: 600; }
-  .risk-val.low { color: var(--green-glow); }
-  .risk-val.mid { color: var(--amber); }
-  .risk-val.high { color: var(--red-glow); }
-
-  .risk-bar-bg {
-    height: 8px; border-radius: 4px;
-    background: var(--bg-deep);
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-
-  .risk-bar-fill {
-    height: 100%; border-radius: 4px;
-    transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.5s;
-  }
-
-  .risk-status { margin-top: 8px; font-size: 11px; font-family: var(--mono); }
-
-  .threat-list { margin-top: 14px; }
-  .threat-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin-bottom: 6px;
-    font-size: 11px;
-    border: 1px solid;
-  }
-
-  .threat-item.type-block { background: rgba(229,57,53,0.08); border-color: rgba(229,57,53,0.3); }
-  .threat-item.type-warn { background: rgba(255,143,0,0.08); border-color: rgba(255,143,0,0.3); }
-  .threat-item.type-ok { background: rgba(46,125,50,0.08); border-color: rgba(46,125,50,0.3); }
-
-  .threat-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-  .threat-desc { color: var(--text-secondary); line-height: 1.4; }
-  .threat-time { font-family: var(--mono); font-size: 9px; color: var(--text-dim); margin-top: 2px; }
-
-  /* ═══════════════ TAMPER SECTION ═══════════════ */
-  .tamper-section {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    margin: 0 0 14px;
-  }
-
-  .tamper-comparison {
-    display: grid; grid-template-columns: 1fr auto 1fr;
-    gap: 12px; align-items: center; margin: 14px 0;
-  }
-
-  .data-box {
-    background: var(--bg-deep);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    font-family: var(--mono);
-    font-size: 11px;
-  }
-
-  .data-box-title { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
-  .data-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid rgba(26,61,42,0.3); }
-  .data-row:last-child { border-bottom: none; }
-  .data-key { color: var(--text-dim); }
-  .data-original { color: var(--green-glow); }
-  .data-tampered { color: var(--red-glow); text-decoration: line-through var(--red-glow); }
-  .data-new { color: var(--red-glow); }
-
-  .vs-arrow { font-size: 20px; color: var(--red); text-align: center; }
-
-  .alert-box {
-    background: rgba(229,57,53,0.1);
-    border: 1px solid var(--red);
-    border-radius: 8px;
-    padding: 14px;
-    display: none;
-    animation: slideIn 0.3s ease;
-  }
-
-  .alert-box.visible { display: block; }
-  @keyframes slideIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-
-  .alert-title { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--red-glow); letter-spacing: 1px; margin-bottom: 8px; }
-  .alert-detail { font-family: var(--mono); font-size: 10px; color: var(--text-secondary); line-height: 1.7; }
-
-  /* ═══════════════ BOTTOM GRID ═══════════════ */
-  .bottom-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 340px;
-    gap: 14px;
-    padding-bottom: 30px;
-  }
-
-  /* ═══════════════ ZAKAT CALC ═══════════════ */
-  .zakat-result {
-    background: rgba(249,168,37,0.08);
-    border: 1px solid rgba(249,168,37,0.3);
-    border-radius: 8px;
-    padding: 14px;
-    margin-top: 12px;
-    display: none;
-  }
-
-  .zakat-result.visible { display: block; }
-  .zakat-amount { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--gold); }
-  .zakat-breakdown { margin-top: 10px; }
-  .zakat-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(249,168,37,0.15); font-size: 12px; }
-  .zakat-row:last-child { border-bottom: none; }
-  .zakat-cat { color: var(--text-secondary); }
-  .zakat-pct { font-family: var(--mono); color: var(--gold); }
-
-  /* ═══════════════ TRANSPARENCY REPORT ═══════════════ */
-  .report-box {
-    background: var(--bg-deep);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    font-size: 12px;
-    line-height: 1.8;
-    color: var(--text-secondary);
-    min-height: 100px;
-    font-family: var(--arabic);
-  }
-
-  .report-box .typing-cursor {
-    display: inline-block; width: 2px; height: 12px;
-    background: var(--green-glow); animation: blink 1s infinite;
-    vertical-align: middle; margin-left: 2px;
-  }
-
-  @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
-
-  /* ═══════════════ QR PANEL ═══════════════ */
-  .qr-wrapper { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  .qr-container {
-    background: #fff;
-    border-radius: 8px;
-    padding: 12px;
-    width: 130px; height: 130px;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-  }
-
-  .qr-info { width: 100%; font-size: 11px; font-family: var(--mono); }
-  .qr-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); }
-  .qr-row:last-child { border-bottom: none; }
-  .qr-key { color: var(--text-dim); }
-  .qr-val { color: var(--text-secondary); }
-
-  /* ═══════════════ ALERT OVERLAY ═══════════════ */
-  #alertOverlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #alertOverlay.active { display: flex; }
-
-  .alert-modal {
-    background: #0d0a08;
-    border: 2px solid var(--red);
-    border-radius: 16px;
-    padding: 30px;
-    max-width: 500px; width: 90%;
-    box-shadow: 0 0 60px rgba(229,57,53,0.4);
-    animation: modal-in 0.3s ease;
-    text-align: center;
-  }
-
-  @keyframes modal-in { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
-
-  .modal-icon { font-size: 48px; margin-bottom: 16px; animation: shake 0.5s 3; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-  .modal-title { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--red-glow); letter-spacing: 2px; margin-bottom: 10px; }
-  .modal-body { font-family: var(--mono); font-size: 12px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px; }
-  .modal-close { background: var(--red); color: #fff; border: none; padding: 10px 30px; border-radius: 8px; font-family: var(--arabic); font-size: 14px; cursor: pointer; }
-  .modal-close:hover { background: var(--red-glow); }
-
-  /* ═══════════════ MISC ═══════════════ */
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
-
-  .tooltip {
-    position: absolute;
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 10px;
-    color: var(--text-primary);
-    white-space: nowrap;
-    z-index: 50;
-    pointer-events: none;
-    font-family: var(--mono);
-    bottom: calc(100% + 6px); left: 0;
-    display: none;
-  }
-
-  .hash-short:hover .tooltip { display: block; }
-
-  .verse-box {
-    text-align: center;
-    padding: 14px;
-    border: 1px solid rgba(249,168,37,0.2);
-    border-radius: 10px;
-    background: rgba(249,168,37,0.04);
-    margin-bottom: 14px;
-  }
-
-  .verse-arabic { font-family: var(--serif); font-size: 16px; color: var(--gold); line-height: 2; direction: rtl; }
-  .verse-bangla { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--arabic); }
-
-  /* ═══════════════ GROQ / SETTINGS ═══════════════ */
-  .settings-modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 200;
-    display: none; align-items: center; justify-content: center;
-  }
-  .settings-modal-overlay.active { display: flex; }
-
-  .settings-modal {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: 16px;
-    padding: 28px;
-    width: 480px; max-width: 95%;
-    box-shadow: 0 0 40px rgba(46,125,50,0.3);
-    animation: modal-in 0.3s ease;
-  }
-
-  .settings-title { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--text-primary); letter-spacing: 1px; margin-bottom: 6px; }
-  .settings-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; }
-
-  .groq-key-row { display: flex; gap: 8px; }
-  .groq-key-row .form-input { flex: 1; font-family: var(--mono); font-size: 11px; letter-spacing: 1px; }
-
-  .btn-sm {
-    padding: 10px 16px; border-radius: 8px; border: none;
-    font-family: var(--arabic); font-size: 12px; font-weight: 600;
-    cursor: pointer; white-space: nowrap; transition: all 0.2s;
-  }
-
-  .btn-sm-green { background: var(--green-main); color: #fff; }
-  .btn-sm-green:hover { background: var(--green-bright); }
-  .btn-sm-grey { background: var(--bg-deep); color: var(--text-muted); border: 1px solid var(--border); }
-  .btn-sm-grey:hover { border-color: var(--border-bright); }
-
-  .groq-status-row {
-    display: flex; align-items: center; gap: 8px;
-    margin-top: 12px; padding: 10px 14px;
-    background: var(--bg-deep); border: 1px solid var(--border);
-    border-radius: 8px; font-family: var(--mono); font-size: 11px;
-  }
-
-  .groq-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .groq-dot.connected { background: var(--green-glow); box-shadow: 0 0 6px var(--green-glow); animation: pulse 2s infinite; }
-  .groq-dot.disconnected { background: var(--text-dim); }
-
-  .groq-info-box {
-    margin-top: 14px;
-    background: rgba(249,168,37,0.08);
-    border: 1px solid rgba(249,168,37,0.25);
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 11px; color: var(--text-secondary); line-height: 1.7;
-  }
-
-  .settings-btn {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-family: var(--arabic); font-size: 12px;
-    color: var(--text-secondary);
-    cursor: pointer; transition: all 0.2s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .settings-btn:hover { border-color: var(--border-bright); color: var(--text-primary); }
-  .settings-btn.groq-active { border-color: var(--green-main); color: var(--green-glow); }
-
-  /* ═══════════════ AI CHAT ═══════════════ */
-  .chat-messages {
-    height: 240px; overflow-y: auto;
-    background: #020805;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 10px;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-
-  .chat-messages::-webkit-scrollbar { width: 4px; }
-  .chat-messages::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
-
-  .chat-msg {
-    max-width: 85%;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 12px; line-height: 1.6;
-    animation: fadeIn 0.3s ease;
-  }
-
-  .chat-msg.user {
-    align-self: flex-end;
-    background: var(--green-dim);
-    color: #e8f5e9;
-    border-bottom-right-radius: 3px;
-  }
-
-  .chat-msg.ai {
-    align-self: flex-start;
-    background: var(--bg-card2);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-bottom-left-radius: 3px;
-    font-family: var(--arabic);
-  }
-
-  .chat-msg.ai .msg-label {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
-    color: var(--green-glow); text-transform: uppercase;
-    margin-bottom: 5px;
-  }
-
-  .chat-msg.typing .typing-dots {
-    display: flex; gap: 4px; padding: 2px 0;
-  }
-  .typing-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--text-muted);
-    animation: dot-bounce 1.2s infinite;
-  }
-  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes dot-bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
-
-  .chat-input-row { display: flex; gap: 8px; }
-  .chat-input-row .form-input { flex: 1; }
-
-  .quick-prompts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-  .quick-prompt-btn {
-    font-size: 10px; padding: 5px 10px;
-    background: var(--bg-deep); border: 1px solid var(--border);
-    border-radius: 20px; color: var(--text-muted);
-    cursor: pointer; font-family: var(--arabic);
-    transition: all 0.2s; white-space: nowrap;
-  }
-  .quick-prompt-btn:hover { border-color: var(--green-main); color: var(--text-secondary); }
-
-  .groq-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-family: var(--mono); font-size: 9px;
-    padding: 2px 8px; border-radius: 10px;
-    background: rgba(249,168,37,0.15); color: var(--gold);
-    border: 1px solid rgba(249,168,37,0.3);
-    margin-left: 6px;
-  }
-
-  @media (max-width: 1200px) {
-    .main-grid { grid-template-columns: 1fr 1fr; }
-    .main-grid .panel:nth-child(2) { grid-column: span 2; order: -1; }
-    .bottom-grid { grid-template-columns: 1fr 1fr; }
-    .bottom-grid .panel:last-child { grid-column: span 2; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-  }
-
-  @media (max-width: 768px) {
-    .main-grid { grid-template-columns: 1fr; }
-    .main-grid .panel:nth-child(2) { grid-column: 1; }
-    .bottom-grid { grid-template-columns: 1fr; }
-    .bottom-grid .panel:last-child { grid-column: 1; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .tamper-comparison { grid-template-columns: 1fr; }
-    .vs-arrow { display: none; }
-  }
-
-  /* Scroll animation */
-  .fade-in { animation: fadeIn 0.4s ease; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-
-  .new-row { animation: newRow 0.5s ease; }
-  @keyframes newRow { from{background:rgba(46,125,50,0.25)} to{background:transparent} }
+:root{
+  --bg:#050a08;--bg2:#081210;--card:#0d1f18;
+  --border:#1a3d2a;--borderB:#2a6644;
+  --g0:#1b5e20;--g1:#2e7d32;--g2:#43a047;--g3:#66bb6a;
+  --gold:#f9a825;--goldD:#f57f17;
+  --red:#e53935;--redG:#ff5252;--amb:#ff8f00;
+  --t1:#e8f5e9;--t2:#81c784;--t3:#4caf50;--t4:#2e7d32;
+  --mono:'IBM Plex Mono',monospace;--ui:'Cairo',sans-serif;--serif:'Amiri',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--t1);font-family:var(--ui);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(46,125,50,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(46,125,50,.04) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);width:900px;height:450px;background:radial-gradient(ellipse,rgba(46,125,50,.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.W{position:relative;z-index:1;max-width:1620px;margin:0 auto;padding:0 14px;}
+
+/* HEADER */
+header{border-bottom:1px solid var(--border);background:rgba(5,10,8,.96);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;padding:9px 20px;}
+.hi{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.lb{display:flex;align-items:center;gap:11px;}
+.li{width:40px;height:40px;background:linear-gradient(135deg,var(--g1),var(--g0));border:1px solid var(--borderB);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 0 18px rgba(46,125,50,.4);}
+.lt{font-weight:700;font-size:15px;color:var(--t1);}
+.ls{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;}
+.hs{display:flex;align-items:center;gap:7px;}
+.sd{width:7px;height:7px;border-radius:50%;background:var(--g3);box-shadow:0 0 7px var(--g3);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.st{font-family:var(--mono);font-size:9px;color:var(--g3);letter-spacing:1px;}
+.hr{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.clk{font-family:var(--mono);font-size:11px;color:var(--t2);background:var(--card);border:1px solid var(--border);padding:4px 9px;border-radius:5px;letter-spacing:1px;}
+.ltg{display:flex;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:7px;padding:3px;}
+.lbtn{font-family:var(--ui);font-size:11px;font-weight:600;padding:4px 11px;border-radius:5px;border:none;cursor:pointer;transition:all .2s;color:var(--t3);background:transparent;}
+.lbtn.on{background:var(--g1);color:#fff;box-shadow:0 0 10px rgba(46,125,50,.5);}
+.hbtn{font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all .2s;background:var(--card);color:var(--t2);font-family:var(--ui);}
+.hbtn:hover{border-color:var(--borderB);color:var(--t1);}
+.hbtn.dem{background:rgba(249,168,37,.1);border-color:rgba(249,168,37,.4);color:var(--gold);}
+.hbtn.pre{background:rgba(46,125,50,.15);border-color:var(--g1);color:var(--g3);}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;padding:14px 0 0;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px 16px;position:relative;overflow:hidden;}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--g1));}
+.sl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:5px;font-family:var(--mono);}
+.sv{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--t1);line-height:1;}
+.ss{font-size:10px;color:var(--t2);margin-top:4px;}
+.si{position:absolute;right:12px;top:12px;font-size:20px;opacity:.1;}
+
+/* JOURNEY */
+.jtrack{display:flex;align-items:flex-start;gap:0;margin:14px 0 4px;position:relative;}
+.jstep{flex:1;text-align:center;position:relative;z-index:1;}
+.jcirc{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:13px;margin:0 auto 5px;transition:all .5s;}
+.jcirc.done{border-color:var(--g3);background:rgba(46,125,50,.25);box-shadow:0 0 10px rgba(46,125,50,.3);}
+.jcirc.act{border-color:var(--gold);background:rgba(249,168,37,.15);box-shadow:0 0 12px rgba(249,168,37,.3);}
+.jlbl{font-size:9px;color:var(--t4);font-family:var(--mono);line-height:1.3;letter-spacing:.5px;}
+.jlbl.done{color:var(--t2);}
+.jlbl.act{color:var(--gold);}
+.jhash{font-size:8px;font-family:var(--mono);color:var(--t4);margin-top:3px;word-break:break-all;}
+.jhash.done{color:var(--g3);}
+.jhash.act{color:var(--gold);}
+.jline{position:absolute;top:17px;left:8%;right:8%;height:2px;background:var(--border);z-index:0;}
+.jfill{height:100%;background:linear-gradient(90deg,var(--g1),var(--g3));width:0%;transition:width 1s ease;}
+
+/* SECTION TITLE */
+.stit{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:9px;}
+.stit::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* GRID */
+.mgrid{display:grid;grid-template-columns:300px 1fr 290px;gap:11px;padding:14px 0;align-items:start;}
+.lcol,.ccol,.rcol{display:flex;flex-direction:column;gap:11px;}
+
+/* PANEL */
+.pnl{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;}
+.ph{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.015);}
+.pt{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);font-family:var(--mono);}
+.pb{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px;}
+.pbg{background:rgba(46,125,50,.3);color:var(--g3);border:1px solid var(--g1);}
+.pbo{background:rgba(249,168,37,.2);color:var(--gold);border:1px solid var(--goldD);}
+.pbr{background:rgba(229,57,53,.2);color:var(--redG);border:1px solid var(--red);}
+.pbd{padding:15px;}
+
+/* FORM */
+.fg{margin-bottom:11px;}
+.fl{display:block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:4px;}
+.fi{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-family:var(--ui);font-size:12px;color:var(--t1);outline:none;transition:border-color .2s,box-shadow .2s;}
+.fi:focus{border-color:var(--g1);box-shadow:0 0 0 2px rgba(46,125,50,.15);}
+.fi::placeholder{color:var(--t4);font-size:11px;}
+select.fi option{background:var(--bg2);}
+.btn{width:100%;padding:9px;border:none;border-radius:6px;font-family:var(--ui);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btng{background:linear-gradient(135deg,var(--g1),var(--g0));color:#fff;box-shadow:0 0 16px rgba(46,125,50,.3);}
+.btng:hover{transform:translateY(-1px);box-shadow:0 0 24px rgba(46,125,50,.5);}
+.btnd{background:rgba(229,57,53,.1);color:var(--redG);border:1px solid var(--red);margin-top:7px;}
+.btnd:hover{background:rgba(229,57,53,.2);}
+.btno{background:rgba(249,168,37,.1);color:var(--gold);border:1px solid var(--goldD);margin-top:7px;}
+.btno:hover{background:rgba(249,168,37,.2);}
+.btnx{background:transparent;color:var(--t2);border:1px solid var(--border);margin-top:7px;}
+.btnx:hover{border-color:var(--borderB);}
+
+/* HASH BOX */
+.hbox{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px;margin-top:11px;font-family:var(--mono);}
+.hbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:4px;}
+.hbv{font-size:9px;color:var(--g3);word-break:break-all;line-height:1.6;}
+.hbv.bad{color:var(--redG);animation:flk .3s steps(2) infinite;}
+@keyframes flk{0%{opacity:1}50%{opacity:.5}}
+
+/* LEDGER */
+.ltbl{width:100%;border-collapse:collapse;font-size:10px;font-family:var(--mono);}
+.ltbl th{padding:6px 9px;text-align:left;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--border);white-space:nowrap;}
+.ltbl td{padding:8px 9px;border-bottom:1px solid rgba(26,61,42,.5);color:var(--t2);vertical-align:middle;}
+.ltbl tr:hover td{background:rgba(46,125,50,.05);}
+.ltbl tr.tbad td{background:rgba(229,57,53,.08);}
+.ltbl tr.tbad{animation:rflash .5s 3;}
+@keyframes rflash{0%,100%{background:rgba(229,57,53,.08)}50%{background:rgba(229,57,53,.2)}}
+.hs2{font-size:9px;color:var(--g3);cursor:pointer;position:relative;}
+.hs2.inv{color:var(--redG);}
+.rbdg{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:20px;font-size:9px;font-weight:600;}
+.rl{background:rgba(46,125,50,.25);color:var(--g3);border:1px solid var(--g1);}
+.rm{background:rgba(255,143,0,.2);color:var(--amb);border:1px solid var(--amb);}
+.rh{background:rgba(229,57,53,.25);color:var(--redG);border:1px solid var(--red);animation:pulse 1s infinite;}
+.piim{color:var(--gold);font-size:9px;}
+.tip{position:absolute;background:var(--card);border:1px solid var(--borderB);border-radius:5px;padding:4px 7px;font-size:9px;color:var(--t1);white-space:nowrap;z-index:50;bottom:calc(100% + 4px);left:0;display:none;}
+.hs2:hover .tip{display:block;}
+.empt{text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:var(--mono);}
+
+/* TERMINAL */
+.term{background:#020805;border:1px solid var(--border);border-radius:6px;padding:9px;height:190px;overflow-y:auto;font-family:var(--mono);font-size:10px;line-height:1.8;}
+.term::-webkit-scrollbar{width:3px;}
+.term::-webkit-scrollbar-thumb{background:var(--borderB);border-radius:2px;}
+.ll{display:flex;gap:6px;}
+.lt2{color:var(--t4);white-space:nowrap;}
+.li2{color:var(--g3);}
+.lw{color:var(--amb);}
+.le{color:var(--redG);}
+.lgo{color:var(--gold);}
+
+/* RISK */
+.rv{font-family:var(--mono);font-size:18px;font-weight:600;}
+.rv.low{color:var(--g3);}
+.rv.mid{color:var(--amb);}
+.rv.hig{color:var(--redG);}
+.rbb{height:6px;border-radius:3px;background:var(--bg2);overflow:hidden;border:1px solid var(--border);}
+.rbf{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1),background .5s;}
+.thi{display:flex;align-items:flex-start;gap:7px;padding:6px 8px;border-radius:6px;margin-bottom:4px;font-size:10px;border:1px solid;}
+.thi.tbl{background:rgba(229,57,53,.08);border-color:rgba(229,57,53,.3);}
+.thi.twn{background:rgba(255,143,0,.08);border-color:rgba(255,143,0,.3);}
+.thi.tok{background:rgba(46,125,50,.08);border-color:rgba(46,125,50,.3);}
+.thic{font-size:12px;flex-shrink:0;}
+.thdesc{color:var(--t2);line-height:1.4;}
+.thtm{font-family:var(--mono);font-size:8px;color:var(--t4);margin-top:1px;}
+
+/* TAMPER */
+.tcomp{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center;margin:10px 0;}
+.dbox{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px;font-family:var(--mono);font-size:10px;}
+.dbt{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:5px;}
+.dr{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(26,61,42,.3);}
+.dr:last-child{border-bottom:none;}
+.dk{color:var(--t4);}
+.do{color:var(--g3);}
+.dtd{color:var(--redG);text-decoration:line-through;}
+.dn{color:var(--redG);}
+.vsarr{font-size:16px;color:var(--red);text-align:center;}
+.alrt{background:rgba(229,57,53,.1);border:1px solid var(--red);border-radius:6px;padding:10px;display:none;animation:slin .3s ease;}
+.alrt.vis{display:block;}
+@keyframes slin{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.altit{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--redG);letter-spacing:1px;margin-bottom:5px;}
+.aldet{font-family:var(--mono);font-size:9px;color:var(--t2);line-height:1.7;white-space:pre-line;}
+
+/* QR */
+.qrw{display:flex;flex-direction:column;align-items:center;gap:9px;}
+.qrc{background:#fff;border-radius:6px;padding:9px;width:112px;height:112px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.qri{width:100%;font-size:10px;font-family:var(--mono);}
+.qrr{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);}
+.qrr:last-child{border-bottom:none;}
+.qrk{color:var(--t4);}
+.qrv{color:var(--t2);}
+
+/* ZAKAT */
+.zkr{background:rgba(249,168,37,.08);border:1px solid rgba(249,168,37,.3);border-radius:6px;padding:11px;margin-top:9px;display:none;}
+.zkr.vis{display:block;}
+.zka{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--gold);}
+.zkrow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(249,168,37,.15);font-size:11px;}
+.zkrow:last-child{border-bottom:none;}
+.zkc{color:var(--t2);}
+.zkp{font-family:var(--mono);color:var(--gold);}
+
+/* REPORT */
+.rpb{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:13px;font-size:12px;line-height:1.9;color:var(--t2);min-height:80px;font-family:var(--ui);}
+.cur{display:inline-block;width:2px;height:12px;background:var(--g3);animation:bl 1s infinite;vertical-align:middle;margin-left:2px;}
+@keyframes bl{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+/* ALERT MODAL */
+#aov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;display:none;align-items:center;justify-content:center;}
+#aov.on{display:flex;}
+.amod{background:#0d0a08;border:2px solid var(--red);border-radius:14px;padding:26px;max-width:460px;width:90%;box-shadow:0 0 60px rgba(229,57,53,.4);animation:mdin .3s ease;text-align:center;}
+@keyframes mdin{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.mic{font-size:40px;margin-bottom:12px;animation:shk .5s 3;}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mtit{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--redG);letter-spacing:2px;margin-bottom:7px;}
+.mbod{font-family:var(--mono);font-size:11px;color:var(--t2);line-height:1.8;margin-bottom:16px;white-space:pre-line;}
+.mcls{background:var(--red);color:#fff;border:none;padding:8px 26px;border-radius:6px;font-family:var(--ui);font-size:13px;cursor:pointer;}
+.mcls:hover{background:var(--redG);}
+
+/* VERSE */
+.vbox{text-align:center;padding:11px;border:1px solid rgba(249,168,37,.2);border-radius:9px;background:rgba(249,168,37,.04);margin-bottom:11px;}
+.va{font-family:var(--serif);font-size:15px;color:var(--gold);line-height:2;direction:rtl;}
+.vb{font-size:10px;color:var(--t3);margin-top:3px;}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:11px 0;}
+
+/* PII stats */
+.piist{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;border-bottom:1px solid var(--border);}
+.piist:last-child{border-bottom:none;}
+
+/* ANIMATIONS */
+.fi2{animation:fin .4s ease;}
+@keyframes fin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.nrow{animation:nrw .6s ease;}
+@keyframes nrw{from{background:rgba(46,125,50,.3)}to{background:transparent}}
+
+/* RESPONSIVE */
+@media(max-width:1280px){
+  .mgrid{grid-template-columns:1fr 1fr!important;}
+  .lcol{order:2;}.ccol{order:1;grid-column:span 2;}.rcol{order:3;}
+  .stats{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:768px){
+  .mgrid{grid-template-columns:1fr!important;}
+  .ccol{grid-column:1;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .tcomp{grid-template-columns:1fr;}.vsarr{display:none;}
+}
 </style>
 </head>
 <body>
 
 <!-- ALERT OVERLAY -->
-<div id="alertOverlay">
-  <div class="alert-modal">
-    <div class="modal-icon">🚨</div>
-    <div class="modal-title" id="alertTitle">INTEGRITY BREACH DETECTED</div>
-    <div class="modal-body" id="alertBody"></div>
-    <button class="modal-close" onclick="closeAlert()">বন্ধ করুন / Close</button>
-  </div>
-</div>
-
-<!-- GROQ SETTINGS MODAL -->
-<div class="settings-modal-overlay" id="settingsOverlay">
-  <div class="settings-modal">
-    <div class="settings-title">⚡ Groq AI — সংযোগ সেটিংস</div>
-    <div class="settings-desc">
-      Groq-এর বিনামূল্যের API ব্যবহার করে রিয়েল AI রেসপন্স পান।<br>
-      <a href="https://console.groq.com/keys" target="_blank" style="color:var(--gold);text-decoration:none;">console.groq.com/keys</a> থেকে বিনামূল্যে API Key নিন।
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Groq API Key</label>
-      <div class="groq-key-row">
-        <input class="form-input" type="password" id="groqKeyInput" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx">
-        <button class="btn-sm btn-sm-green" onclick="saveGroqKey()">সংরক্ষণ</button>
-      </div>
-    </div>
-
-    <div class="groq-status-row">
-      <div class="groq-dot" id="groqDot" style="background:var(--text-dim);"></div>
-      <span id="groqStatusText" style="color:var(--text-muted);">সংযুক্ত নয়</span>
-    </div>
-
-    <div class="groq-info-box">
-      ⚠️ <strong>প্রোটোটাইপ নোট:</strong> এই API Key ব্রাউজারের LocalStorage-এ সংরক্ষিত হবে। এটি শুধুমাত্র ভাইভা ডেমোর জন্য। প্রোডাকশনে API Key সবসময় ব্যাকএন্ডে রাখতে হবে।<br><br>
-      🤖 <strong>মডেল:</strong> llama-3.3-70b-versatile (Groq-এ বিনামূল্যে)<br>
-      ⚡ <strong>গতি:</strong> ~500 tokens/sec — রিয়েল-টাইম রেসপন্স
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button class="btn-sm btn-sm-green" style="flex:1;" onclick="testGroqConnection()">🔌 সংযোগ পরীক্ষা করুন</button>
-      <button class="btn-sm btn-sm-grey" onclick="closeSettings()">বন্ধ করুন</button>
-    </div>
+<div id="aov">
+  <div class="amod">
+    <div class="mic">🚨</div>
+    <div class="mtit" id="atit">INTEGRITY BREACH DETECTED</div>
+    <div class="mbod" id="abod"></div>
+    <button class="mcls" onclick="closeAlert()">বন্ধ করুন / Close</button>
   </div>
 </div>
 
 <!-- HEADER -->
 <header>
-  <div class="header-inner">
-    <div class="logo-block">
-      <div class="logo-icon">🛡️</div>
-      <div class="logo-text">
-        <div class="logo-title" id="logoTitle">আল-আমানাহ এআই গার্ড</div>
-        <div class="logo-sub">Zero-Trust · Fraud Engine · PII Vault</div>
+  <div class="hi">
+    <div class="lb">
+      <div class="li">🛡️</div>
+      <div>
+        <div class="lt" id="logoTitle">আল-আমানাহ এআই গার্ড</div>
+        <div class="ls">Zero-Trust · Fraud Engine · PII Vault · v2.1</div>
       </div>
     </div>
-    <div class="header-status">
-      <div class="status-dot"></div>
-      <div class="status-text" id="sysStatus">SYSTEM ACTIVE — ALL MODULES OPERATIONAL</div>
+    <div class="hs">
+      <div class="sd"></div>
+      <div class="st" id="sysStatus">SYSTEM ACTIVE — ALL MODULES OPERATIONAL</div>
     </div>
-    <div class="header-right">
-      <div class="live-clock" id="clock">--:--:--</div>
-      <button class="settings-btn" id="groqStatusBtn" onclick="openSettings()">
-        <span id="groqBtnIcon">⚡</span>
-        <span id="groqBtnLabel">Groq সংযোগ করুন</span>
-      </button>
-      <div class="lang-toggle">
-        <button class="lang-btn active" onclick="setLang('bn')" id="btnBn">বাংলা</button>
-        <button class="lang-btn" onclick="setLang('en')" id="btnEn">EN</button>
+    <div class="hr">
+      <button class="hbtn dem" onclick="loadDemoData()" id="btnDemo">⚡ Demo Data</button>
+      <button class="hbtn" id="btnPresent" onclick="togglePresent()">🖥️ Present Mode</button>
+      <div class="clk" id="clock">--:--:--</div>
+      <div class="ltg">
+        <button class="lbtn on" onclick="setLang('bn')" id="btnBn">বাংলা</button>
+        <button class="lbtn" onclick="setLang('en')" id="btnEn">EN</button>
       </div>
     </div>
   </div>
 </header>
 
-<div class="wrapper">
+<div class="W">
 
   <!-- VERSE -->
-  <div style="padding-top:16px;">
-    <div class="verse-box">
-      <div class="verse-arabic">إِنَّ اللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا الْأَمَانَاتِ إِلَىٰ أَهْلِهَا</div>
-      <div class="verse-bangla" id="verseText">নিশ্চয়ই আল্লাহ তোমাদের আদেশ করছেন আমানত তার প্রাপকের কাছে পৌঁছে দিতে। — সূরা আন-নিসা ৪:৫৮</div>
+  <div style="padding-top:13px;">
+    <div class="vbox">
+      <div class="va">إِنَّ اللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا الْأَمَانَاتِ إِلَىٰ أَهْلِهَا</div>
+      <div class="vb" id="verseText">নিশ্চয়ই আল্লাহ তোমাদের আদেশ করছেন আমানত তার প্রাপকের কাছে পৌঁছে দিতে। — সূরা আন-নিসা ৪:৫৮</div>
     </div>
   </div>
 
-  <!-- STATS ROW -->
-  <div class="stats-row">
-    <div class="stat-card" style="--accent-color:#43a047;">
-      <div class="stat-label" id="lblTotalDon">মোট ডোনেশন</div>
-      <div class="stat-value" id="totalDonation">৳০</div>
-      <div class="stat-sub" id="subTotalDon">সেশনে সংগ্রহিত</div>
-      <div class="stat-icon">💰</div>
-    </div>
-    <div class="stat-card" style="--accent-color:#f9a825;">
-      <div class="stat-label" id="lblChainLen">চেইন দৈর্ঘ্য</div>
-      <div class="stat-value" id="chainLength">০</div>
-      <div class="stat-sub" id="subChain">অপরিবর্তনীয় ব্লক</div>
-      <div class="stat-icon">🔗</div>
-    </div>
-    <div class="stat-card" style="--accent-color:#e53935;">
-      <div class="stat-label" id="lblThreats">হুমকি ব্লক</div>
-      <div class="stat-value" id="threatsBlocked">০</div>
-      <div class="stat-sub" id="subThreats">এআই রক্ষাকারী</div>
-      <div class="stat-icon">🚫</div>
-    </div>
-    <div class="stat-card" style="--accent-color:#43a047;">
-      <div class="stat-label" id="lblIntegrity">চেইন অখণ্ডতা</div>
-      <div class="stat-value" id="integrityStatus" style="color:var(--green-glow);font-size:18px;">✓ INTACT</div>
-      <div class="stat-sub" id="subIntegrity">সমস্ত হ্যাশ বৈধ</div>
-      <div class="stat-icon">🛡️</div>
+  <!-- STATS -->
+  <div class="stats">
+    <div class="sc" style="--ac:var(--g2)"><div class="sl" id="lblTD">মোট ডোনেশন</div><div class="sv" id="totalDon">৳০</div><div class="ss" id="subTD">সেশনে সংগ্রহিত</div><div class="si">💰</div></div>
+    <div class="sc" style="--ac:var(--gold)"><div class="sl" id="lblCL">চেইন দৈর্ঘ্য</div><div class="sv" id="chainLen">০</div><div class="ss" id="subCL">অপরিবর্তনীয় ব্লক</div><div class="si">🔗</div></div>
+    <div class="sc" style="--ac:var(--red)"><div class="sl" id="lblTH">হুমকি ব্লক</div><div class="sv" id="threatsCnt">০</div><div class="ss" id="subTH">AI রক্ষাকারী</div><div class="si">🚫</div></div>
+    <div class="sc" style="--ac:var(--g2)"><div class="sl" id="lblIN">চেইন অখণ্ডতা</div><div class="sv" id="integrity" style="color:var(--g3);font-size:15px;">✓ INTACT</div><div class="ss" id="subIN">সমস্ত হ্যাশ বৈধ</div><div class="si">🛡️</div></div>
+    <div class="sc" style="--ac:var(--g2)"><div class="sl" id="lblUT">আপটাইম</div><div class="sv" id="uptime" style="color:var(--g3);font-size:15px;">0s</div><div class="ss" id="subUT">নিরবচ্ছিন্ন পর্যবেক্ষণ</div><div class="si">📡</div></div>
+  </div>
+
+  <!-- JOURNEY VISUALIZER -->
+  <div style="padding:14px 0 2px;">
+    <div class="stit" id="secJ">💸 ডোনেশন জার্নি — প্রতিটি টাকার ডিজিটাল যাত্রা</div>
+    <div class="pnl">
+      <div class="ph">
+        <span class="pt" id="ptJ">Wallet → AI Verify → Hash Seal → Allocate → Beneficiary</span>
+        <span class="pb pbg">⛓️ End-to-End Audit Trail</span>
+      </div>
+      <div class="pbd" style="padding:18px 22px;">
+        <div style="position:relative;">
+          <div class="jline"><div class="jfill" id="jfill"></div></div>
+          <div class="jtrack">
+            <div class="jstep"><div class="jcirc" id="jc0">💳</div><div class="jlbl" id="jl0">দান গ্রহণ<br>INTAKE</div><div class="jhash" id="jh0">অপেক্ষারত...</div></div>
+            <div class="jstep"><div class="jcirc" id="jc1">🔍</div><div class="jlbl" id="jl1">AI যাচাই<br>VERIFY</div><div class="jhash" id="jh1">স্কোরিং...</div></div>
+            <div class="jstep"><div class="jcirc" id="jc2">⛓️</div><div class="jlbl" id="jl2">হ্যাশ সিল<br>HASH</div><div class="jhash" id="jh2">SHA-256...</div></div>
+            <div class="jstep"><div class="jcirc" id="jc3">📋</div><div class="jlbl" id="jl3">বরাদ্দ<br>ALLOCATE</div><div class="jhash" id="jh3">খাত নির্ধারণ...</div></div>
+            <div class="jstep"><div class="jcirc" id="jc4">✅</div><div class="jlbl" id="jl4">সুবিধাভোগী<br>DELIVERED</div><div class="jhash" id="jh4">পৌঁছে গেছে...</div></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- MAIN GRID -->
-  <div class="main-grid">
+  <div class="mgrid">
 
-    <!-- LEFT: DONATION FORM -->
-    <div>
-      <div class="section-title" id="secDonation">ডোনেশন সিমুলেটর</div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title" id="ptDonate">নতুন ডোনেশন</span>
-          <span class="panel-badge badge-green" id="pbSecure">🔒 AES-256 সুরক্ষিত</span>
-        </div>
-        <div class="panel-body">
-          <div class="form-group">
-            <label class="form-label" id="lDonor">দাতার নাম (PII Vault-এ এনক্রিপ্ট হবে)</label>
-            <input class="form-input" type="text" id="inputDonor" placeholder="আব্দুল্লাহ আহমেদ">
-          </div>
-          <div class="form-group">
-            <label class="form-label" id="lPhone">ফোন নম্বর</label>
-            <input class="form-input" type="text" id="inputPhone" placeholder="017XXXXXXXX">
-          </div>
-          <div class="form-group">
-            <label class="form-label" id="lAmount">পরিমাণ (BDT)</label>
-            <input class="form-input" type="number" id="inputAmount" placeholder="5000" min="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label" id="lCategory">খাত</label>
-            <select class="form-input" id="inputCategory">
-              <option value="এতিমখানা">এতিমখানা প্রজেক্ট</option>
-              <option value="নলকূপ">নলকূপ স্থাপন</option>
-              <option value="শিক্ষা">শিক্ষা সহায়তা</option>
-              <option value="বিধবা">বিধবা সহায়তা</option>
-              <option value="কুরবানী">কুরবানী প্রজেক্ট</option>
-              <option value="রোহিঙ্গা">রোহিঙ্গা ত্রাণ</option>
-            </select>
-          </div>
+    <!-- LEFT -->
+    <div class="lcol" id="leftCol">
 
-          <button class="btn btn-primary" onclick="simulateDonation()" id="btnSimulate">
-            ✅ ডোনেশন সিমুলেট করুন
-          </button>
-
-          <!-- Live Hash Display -->
-          <div class="hash-display" id="liveHashBox" style="display:none;">
-            <div class="hash-label" id="lblSeal">⛓️ ডিজিটাল সিল (SHA-256)</div>
-            <div class="hash-value" id="liveHashVal">—</div>
-            <div style="margin-top:8px;">
-              <div class="hash-label" id="lblChainLink">🔗 পূর্ববর্তী হ্যাশ লিংক</div>
-              <div class="hash-value" id="prevHashVal" style="color:var(--text-muted);">—</div>
+      <!-- DONATION FORM -->
+      <div>
+        <div class="stit" id="secD">ডোনেশন সিমুলেটর</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptD">নতুন ডোনেশন</span><span class="pb pbg">🔒 AES-256</span></div>
+          <div class="pbd">
+            <div class="fg"><label class="fl" id="lDonor">দাতার নাম (PII Vault)</label><input class="fi" type="text" id="iDonor" placeholder="আব্দুল্লাহ আহমেদ"></div>
+            <div class="fg"><label class="fl" id="lPhone">ফোন নম্বর</label><input class="fi" type="text" id="iPhone" placeholder="017XXXXXXXX"></div>
+            <div class="fg"><label class="fl" id="lAmount">পরিমাণ (BDT)</label><input class="fi" type="number" id="iAmount" placeholder="5000" min="1"></div>
+            <div class="fg"><label class="fl" id="lCat">খাত</label>
+              <select class="fi" id="iCat">
+                <option value="এতিমখানা">এতিমখানা প্রজেক্ট</option>
+                <option value="নলকূপ">নলকূপ স্থাপন</option>
+                <option value="শিক্ষা">শিক্ষা সহায়তা</option>
+                <option value="বিধবা">বিধবা সহায়তা</option>
+                <option value="কুরবানী">কুরবানী প্রজেক্ট</option>
+                <option value="রোহিঙ্গা">রোহিঙ্গা ত্রাণ</option>
+              </select>
+            </div>
+            <button class="btn btng" onclick="simDonate()" id="btnSim">✅ ডোনেশন সিমুলেট করুন</button>
+            <div class="hbox" id="liveHash" style="display:none;">
+              <div class="hbl">⛓️ SHA-256 DIGITAL SEAL</div>
+              <div class="hbv" id="liveHashV">—</div>
+              <div style="margin-top:5px;"><div class="hbl">🔗 PREVIOUS HASH LINK</div><div class="hbv" id="prevHashV" style="color:var(--t3);">—</div></div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- TAMPER DEMO -->
-      <div style="margin-top:14px;">
-        <div class="section-title" id="secTamper">⚠️ ট্যাম্পার ডেমো</div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title" id="ptTamper">হ্যাক করার চেষ্টা সিমুলেশন</span>
-            <span class="panel-badge badge-red" id="pbDanger">⚡ বিপজ্জনক</span>
-          </div>
-          <div class="panel-body">
-            <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;line-height:1.6;" id="tamperDesc">
-              কেউ যদি ডাটাবেসে ঢুকে টাকার পরিমাণ বদলানোর চেষ্টা করে, তখন কী হয় দেখুন।
-            </p>
-            <div class="tamper-comparison" id="tamperComp" style="display:none;">
-              <div class="data-box">
-                <div class="data-box-title" id="dtOriginal">মূল ডাটা</div>
-                <div id="originalData"></div>
-              </div>
-              <div class="vs-arrow">⚡</div>
-              <div class="data-box">
-                <div class="data-box-title" id="dtModified">পরিবর্তিত ডাটা</div>
-                <div id="tamperedData"></div>
-              </div>
+      <div>
+        <div class="stit" id="secT">⚠️ ট্যাম্পার ডেমো</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptT">হ্যাক সিমুলেশন</span><span class="pb pbr">⚡ LIVE DEMO</span></div>
+          <div class="pbd">
+            <p style="font-size:11px;color:var(--t2);margin-bottom:9px;line-height:1.6;" id="tamperDesc">ডাটাবেসে কেউ টাকার পরিমাণ বদলালে কী হয় — চেইন তাৎক্ষণিক ভেঙে যাবে এবং লাল অ্যালার্ম বাজবে।</p>
+            <div class="tcomp" id="tcomp" style="display:none;">
+              <div class="dbox"><div class="dbt" id="dtO">মূল ডাটা</div><div id="origD"></div></div>
+              <div class="vsarr">⚡</div>
+              <div class="dbox"><div class="dbt" id="dtM">পরিবর্তিত</div><div id="tampD"></div></div>
             </div>
-            <div class="alert-box" id="tamperAlert">
-              <div class="alert-title">🚨 INTEGRITY BREACH — চেইন ভেঙে গেছে!</div>
-              <div class="alert-detail" id="tamperAlertDetail"></div>
-            </div>
-            <button class="btn btn-danger" onclick="demonstrateTamper()" id="btnTamper">
-              🔓 হ্যাক করার চেষ্টা করুন (Demo)
-            </button>
-            <button class="btn btn-gold" onclick="restoreChain()" id="btnRestore" style="display:none;">
-              🔄 চেইন পুনরুদ্ধার করুন
-            </button>
+            <div class="alrt" id="tAlert"><div class="altit">🚨 INTEGRITY BREACH — চেইন ভেঙে গেছে!</div><div class="aldet" id="tAlertD"></div></div>
+            <button class="btn btnd" onclick="doTamper()" id="btnTamp">🔓 হ্যাক করার চেষ্টা করুন</button>
+            <button class="btn btnx" onclick="restoreChain()" id="btnRest" style="display:none;">🔄 চেইন পুনরুদ্ধার করুন</button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- CENTER: LEDGER -->
-    <div>
-      <div class="section-title" id="secLedger">আমানাহ লেজার — অপরিবর্তনীয় অডিট ট্রেইল</div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title" id="ptLedger">লাইভ ট্রানজ্যাকশন চেইন</span>
-          <span class="panel-badge badge-green" id="pbLive">⚡ রিয়েল-টাইম</span>
-        </div>
-        <div style="overflow-x:auto;">
-          <table class="ledger-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th id="thDonor">দাতা (PII)</th>
-                <th id="thAmount">পরিমাণ</th>
-                <th id="thCategory">খাত</th>
-                <th id="thRisk">ঝুঁকি</th>
-                <th id="thHash">ডিজিটাল সিল</th>
-                <th id="thChain">চেইন</th>
-                <th id="thTime">সময়</th>
-              </tr>
-            </thead>
-            <tbody id="ledgerBody">
-              <tr>
-                <td colspan="8">
-                  <div class="empty-ledger" id="emptyMsg">
-                    ⛓️ কোনো ট্রানজ্যাকশন নেই<br>
-                    <span style="font-size:10px;color:var(--text-dim);">ডোনেশন সিমুলেট করুন</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- TRANSPARENCY REPORT -->
-      <div style="margin-top:14px;">
-        <div class="section-title" id="secReport">এআই স্বচ্ছতা রিপোর্ট</div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title" id="ptReport">স্বয়ংক্রিয় দাতার বার্তা</span>
-            <span class="panel-badge badge-gold" id="pbAI">🤖 AI জেনারেটেড</span>
-          </div>
-          <div class="panel-body">
-            <div class="report-box" id="reportBox">
-              <span style="color:var(--text-dim);font-size:11px;font-family:var(--mono);" id="reportPlaceholder">
-                ডোনেশন সিমুলেট করলে এখানে AI-চালিত স্বচ্ছতা রিপোর্ট তৈরি হবে...
-              </span>
+      <!-- ZAKAT CALC -->
+      <div>
+        <div class="stit" id="secZ">🌙 যাকাত ক্যালকুলেটর</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptZ">AI স্মার্ট রাউটিং</span><span class="pb pbo">Islamic Finance</span></div>
+          <div class="pbd">
+            <div class="fg"><label class="fl" id="lGold">স্বর্ণ (গ্রাম)</label><input class="fi" type="number" id="zGold" placeholder="০"></div>
+            <div class="fg"><label class="fl" id="lSav">নগদ সঞ্চয় (BDT)</label><input class="fi" type="number" id="zSav" placeholder="০"></div>
+            <div class="fg"><label class="fl" id="lBiz">ব্যবসায়িক সম্পদ (BDT)</label><input class="fi" type="number" id="zBiz" placeholder="০"></div>
+            <button class="btn btno" onclick="calcZakat()" id="btnZ">🌙 যাকাত হিসাব করুন</button>
+            <div class="zkr" id="zkRes">
+              <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--goldD);font-family:var(--mono);margin-bottom:4px;" id="lbZD">প্রদেয় যাকাত</div>
+              <div class="zka" id="zkAmt">৳০</div>
+              <div class="div"></div>
+              <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--goldD);font-family:var(--mono);margin:5px 0 4px;" id="lbSR">AI স্মার্ট রাউটিং</div>
+              <div id="zkBreak"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: AI MONITOR + TERMINAL -->
-    <div>
-      <div class="section-title" id="secAI">এআই অ্যানোমালি ডিটেক্টর</div>
-      <div class="panel" style="margin-bottom:14px;">
-        <div class="panel-header">
-          <span class="panel-title" id="ptRisk">রিস্ক স্কোর ইঞ্জিন</span>
-          <span class="panel-badge badge-green" id="pbModel">v2.1 মডেল</span>
-        </div>
-        <div class="panel-body">
-          <div class="risk-meter-container">
-            <div class="risk-label-row">
-              <span style="font-size:11px;color:var(--text-muted);font-family:var(--mono);" id="lblCurrentRisk">বর্তমান স্কোর</span>
-              <span class="risk-val low" id="riskScoreVal">—</span>
-            </div>
-            <div class="risk-bar-bg">
-              <div class="risk-bar-fill" id="riskBarFill" style="width:0%;background:var(--green-main);"></div>
-            </div>
-            <div class="risk-status" id="riskStatusText" style="color:var(--text-dim);">অপেক্ষারত...</div>
+    <!-- CENTER -->
+    <div class="ccol">
+
+      <!-- LEDGER -->
+      <div>
+        <div class="stit" id="secL">আমানাহ লেজার — অপরিবর্তনীয় অডিট ট্রেইল</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptL">লাইভ ট্রানজ্যাকশন চেইন</span><span class="pb pbg">⚡ রিয়েল-টাইম</span></div>
+          <div style="overflow-x:auto;">
+            <table class="ltbl">
+              <thead><tr>
+                <th>#</th><th id="thDo">দাতা (PII মাস্কড)</th><th id="thAm">পরিমাণ</th>
+                <th id="thCa">খাত</th><th id="thRi">AI ঝুঁকি</th>
+                <th id="thHa">ডিজিটাল সিল</th><th id="thCh">চেইন</th><th id="thTi">সময়</th>
+              </tr></thead>
+              <tbody id="ledger"><tr><td colspan="8"><div class="empt" id="emptyMsg">⛓️ কোনো ট্রানজ্যাকশন নেই — ডোনেশন করুন বা Demo ক্লিক করুন</div></td></tr></tbody>
+            </table>
           </div>
+        </div>
+      </div>
 
-          <div class="divider"></div>
+      <!-- AI REPORT -->
+      <div>
+        <div class="stit" id="secR">🤖 AI স্বচ্ছতা রিপোর্ট</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptR">স্বয়ংক্রিয় দাতার বার্তা</span><span class="pb pbo">AI জেনারেটেড</span></div>
+          <div class="pbd"><div class="rpb" id="repBox"><span style="color:var(--t4);font-size:10px;font-family:var(--mono);" id="repPH">ডোনেশন সিমুলেট করলে AI স্বচ্ছতা রিপোর্ট তৈরি হবে...</span></div></div>
+        </div>
+      </div>
 
-          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);font-family:var(--mono);margin-bottom:8px;" id="lblThreatsLog">সাম্প্রতিক হুমকি লগ</div>
-          <div class="threat-list" id="threatList">
-            <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-align:center;padding:16px;" id="noThreat">কোনো হুমকি নেই</div>
+      <!-- PII VAULT -->
+      <div>
+        <div class="stit" id="secP">🔐 PII ভল্ট — তথ্যের আমানত</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptP">ব্যক্তিগত তথ্য সুরক্ষা</span><span class="pb pbg">AES-256 ENCRYPTED</span></div>
+          <div class="pbd">
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;">
+              <div style="text-align:center;"><div style="font-size:32px;margin-bottom:5px;">🔐</div><div style="font-family:var(--mono);font-size:8px;color:var(--g3);letter-spacing:1px;" id="piiStat">VAULT SEALED</div></div>
+              <div>
+                <div class="piist"><span style="color:var(--t2);" id="lblER">এনক্রিপ্টেড রেকর্ড</span><span style="font-family:var(--mono);color:var(--g3);" id="encR">০</span></div>
+                <div class="piist"><span style="color:var(--t2);" id="lblMF">মাস্কড ফিল্ড</span><span style="font-family:var(--mono);color:var(--gold);" id="maskF">০</span></div>
+                <div class="piist"><span style="color:var(--t2);" id="lblDB">ডাটা ব্রিচ</span><span style="font-family:var(--mono);color:var(--g3);">০</span></div>
+              </div>
+            </div>
+            <div style="margin-top:11px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px;font-family:var(--mono);font-size:9px;">
+              <div style="color:var(--t4);margin-bottom:3px;" id="piiRaw">🔓 মূল তথ্য (ডাটাবেসে যায় না):</div>
+              <div style="color:var(--t2);margin-bottom:7px;" id="piiRawV">নাম: আব্দুল্লাহ | ফোন: 01712345678</div>
+              <div style="color:var(--t4);margin-bottom:3px;" id="piiEnc">🔒 ডাটাবেসে সেভ হয়:</div>
+              <div style="color:var(--gold);word-break:break-all;line-height:1.5;font-size:8px;" id="piiEncV">U2FsdGVkX1+8kX2mN9pQ7vR3sT4uW5xY6zA7bB8cC9dD0eE...</div>
+            </div>
+            <div style="margin-top:7px;font-size:10px;color:var(--t2);line-height:1.6;" id="piiNote">হ্যাকার ডাটাবেস চুরি করলেও ব্যক্তিগত তথ্য পড়তে পারবে না।</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="rcol">
+
+      <!-- AI RISK -->
+      <div>
+        <div class="stit" id="secAI">🤖 AI অ্যানোমালি ডিটেক্টর</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptAI">রিস্ক স্কোর ইঞ্জিন</span><span class="pb pbg">v2.1</span></div>
+          <div class="pbd">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+              <span style="font-size:9px;color:var(--t3);font-family:var(--mono);" id="lblRisk">বর্তমান স্কোর</span>
+              <span class="rv low" id="riskVal">—</span>
+            </div>
+            <div class="rbb"><div class="rbf" id="riskBar" style="width:0%;background:var(--g1);"></div></div>
+            <div style="font-family:var(--mono);font-size:9px;margin-top:5px;color:var(--t4);" id="riskSt">অপেক্ষারত...</div>
+            <div class="div"></div>
+            <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:var(--mono);margin-bottom:6px;" id="lblTL">হুমকি লগ</div>
+            <div id="threatL"><div style="font-size:10px;color:var(--t4);font-family:var(--mono);text-align:center;padding:10px;" id="noThreat">কোনো হুমকি নেই</div></div>
           </div>
         </div>
       </div>
 
       <!-- TERMINAL -->
-      <div class="section-title" id="secTerminal">সিস্টেম টার্মিনাল</div>
-      <div class="panel" style="margin-bottom:14px;">
-        <div class="panel-header">
-          <span class="panel-title" id="ptTerminal">লাইভ লগ ফিড</span>
-          <span class="panel-badge badge-green">● LIVE</span>
-        </div>
-        <div class="panel-body" style="padding:10px;">
-          <div class="terminal" id="terminal"></div>
+      <div>
+        <div class="stit" id="secTerm">💻 সিস্টেম টার্মিনাল</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptTerm">লাইভ লগ ফিড</span><span class="pb pbg">● LIVE</span></div>
+          <div class="pbd" style="padding:8px;"><div class="term" id="terminal"></div></div>
         </div>
       </div>
 
-      <!-- QR PANEL -->
-      <div class="section-title" id="secQR">বেনিফিশিয়ারি QR</div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title" id="ptQR">স্বচ্ছতা QR কোড</span>
-          <span class="panel-badge badge-gold" id="pbQR">স্ক্যান করুন</span>
-        </div>
-        <div class="panel-body">
-          <div class="qr-wrapper">
-            <div class="qr-container" id="qrContainer">
-              <span style="font-size:11px;color:#888;font-family:monospace;text-align:center;">ডোনেশনের পর QR<br>তৈরি হবে</span>
-            </div>
-            <div class="qr-info" id="qrInfo" style="display:none;">
-              <div class="qr-row"><span class="qr-key" id="qkRef">রেফ:</span> <span class="qr-val" id="qvRef">—</span></div>
-              <div class="qr-row"><span class="qr-key" id="qkCat">খাত:</span> <span class="qr-val" id="qvCat">—</span></div>
-              <div class="qr-row"><span class="qr-key" id="qkAmt">পরিমাণ:</span> <span class="qr-val" id="qvAmt">—</span></div>
-              <div class="qr-row"><span class="qr-key" id="qkDate">তারিখ:</span> <span class="qr-val" id="qvDate">—</span></div>
-              <div class="qr-row"><span class="qr-key" id="qkStatus">অবস্থা:</span> <span class="qr-val" style="color:var(--green-glow);" id="qvStatus">✓ যাচাইকৃত</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOTTOM GRID -->
-  <div class="bottom-grid">
-
-    <!-- ZAKAT CALCULATOR -->
-    <div>
-      <div class="section-title" id="secZakat">যাকাত ক্যালকুলেটর</div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title" id="ptZakat">এআই স্মার্ট রাউটিং</span>
-          <span class="panel-badge badge-gold" id="pbZakat">ইসলামিক ফাইন্যান্স</span>
-        </div>
-        <div class="panel-body">
-          <div class="form-group">
-            <label class="form-label" id="lGold">স্বর্ণ (গ্রাম)</label>
-            <input class="form-input" type="number" id="zakatGold" placeholder="০" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label" id="lSavings">নগদ সঞ্চয় (BDT)</label>
-            <input class="form-input" type="number" id="zakatSavings" placeholder="০" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label" id="lBiz">ব্যবসায়িক সম্পদ (BDT)</label>
-            <input class="form-input" type="number" id="zakatBiz" placeholder="০" min="0">
-          </div>
-          <button class="btn btn-gold" onclick="calculateZakat()" id="btnZakat">
-            🌙 যাকাত হিসাব করুন
-          </button>
-          <div class="zakat-result" id="zakatResult">
-            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-dim);font-family:var(--mono);margin-bottom:6px;" id="lbZakatDue">প্রদেয় যাকাত</div>
-            <div class="zakat-amount" id="zakatAmount">৳০</div>
-            <div class="divider"></div>
-            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-dim);font-family:var(--mono);margin:8px 0 6px;" id="lbSmartRoute">এআই স্মার্ট রাউটিং পরামর্শ</div>
-            <div class="zakat-breakdown" id="zakatBreakdown"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PII VAULT STATUS -->
-    <div>
-      <div class="section-title" id="secPII">PII ভল্ট — তথ্যের আমানত</div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title" id="ptPII">ব্যক্তিগত তথ্য সুরক্ষা</span>
-          <span class="panel-badge badge-green" id="pbEnc">AES-256 এনক্রিপ্টেড</span>
-        </div>
-        <div class="panel-body">
-
-          <div style="text-align:center;padding:20px 0 14px;">
-            <div style="font-size:48px;margin-bottom:10px;">🔐</div>
-            <div style="font-family:var(--mono);font-size:13px;color:var(--green-glow);letter-spacing:1px;" id="piiVaultStatus">ভল্ট সক্রিয় — সমস্ত PII সুরক্ষিত</div>
-          </div>
-
-          <div id="piiExampleBox">
-            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);font-family:var(--mono);margin-bottom:8px;" id="lblPIIDemo">এনক্রিপশন ডেমো</div>
-            <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--mono);font-size:11px;">
-              <div style="color:var(--text-dim);margin-bottom:6px;" id="piiRaw">🔓 মূল তথ্য:</div>
-              <div style="color:var(--text-secondary);margin-bottom:10px;" id="piiRawVal">নাম: আব্দুল্লাহ | ফোন: 01712345678</div>
-              <div style="color:var(--text-dim);margin-bottom:6px;" id="piiEnc">🔒 ডাটাবেসে সেভ হয়:</div>
-              <div style="color:var(--gold);word-break:break-all;line-height:1.5;" id="piiEncVal">U2FsdGVkX1+8kX2mN9pQ7vR3sT4uW5xY6zA7bB8cC9dD0eE...</div>
-            </div>
-            <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);line-height:1.6;" id="piiNote">
-              হ্যাকার ডাটাবেস চুরি করলেও এই এনক্রিপ্টেড ডাটা পড়তে পারবে না। শুধুমাত্র অনুমোদিত সিস্টেম ডিক্রিপ্ট করতে পারবে।
-            </div>
-          </div>
-
-          <div class="divider"></div>
-          <div id="piiStats">
-            <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border);">
-              <span style="color:var(--text-secondary);" id="lblEncRecords">এনক্রিপ্টেড রেকর্ড</span>
-              <span style="font-family:var(--mono);color:var(--green-glow);" id="encRecordCount">০</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border);">
-              <span style="color:var(--text-secondary);" id="lblMaskedFields">মাস্কড ফিল্ড</span>
-              <span style="font-family:var(--mono);color:var(--gold);" id="maskedFieldCount">০</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
-              <span style="color:var(--text-secondary);" id="lblVaultStatus">ভল্ট অবস্থা</span>
-              <span style="font-family:var(--mono);color:var(--green-glow);" id="vaultStatusVal">🔒 SEALED</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BENEFICIARY QR DETAIL (large) -->
-    <div>
-      <div class="section-title" id="secBenef">বেনিফিশিয়ারি ট্র্যাকার</div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title" id="ptBenef">মাঠ পর্যায়ের যাচাই</span>
-          <span class="panel-badge badge-green" id="pbField">ফিল্ড অফিসার</span>
-        </div>
-        <div class="panel-body">
-          <div id="benefList" style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-align:center;padding:20px;" id="noBenef">
-            ডোনেশন সিমুলেট করলে বেনিফিশিয়ারি তথ্য এখানে দেখাবে।
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- AI CHAT SECTION (full width) -->
-  <div style="padding-bottom: 30px;">
-    <div class="section-title" id="secChat">
-      🤖 আল-আমানাহ এআই সহকারী
-      <span class="groq-badge" id="groqModelBadge">⚡ Groq সংযুক্ত নয়</span>
-    </div>
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title" id="ptChat">Groq AI — লাইভ প্রশ্নোত্তর</span>
-        <span class="panel-badge badge-gold" id="pbChatModel">llama-3.3-70b-versatile</span>
-      </div>
-      <div class="panel-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-
-          <!-- LEFT: Chat -->
-          <div>
-            <div class="quick-prompts" id="quickPrompts">
-              <button class="quick-prompt-btn" onclick="sendQuickPrompt(0)">এই ট্রানজ্যাকশনগুলো বিশ্লেষণ করুন</button>
-              <button class="quick-prompt-btn" onclick="sendQuickPrompt(1)">আজকের ঝুঁকি সারাংশ</button>
-              <button class="quick-prompt-btn" onclick="sendQuickPrompt(2)">স্বচ্ছতা রিপোর্ট তৈরি করুন</button>
-              <button class="quick-prompt-btn" onclick="sendQuickPrompt(3)">PII সুরক্ষা ব্যাখ্যা করুন</button>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-              <div class="chat-msg ai">
-                <div class="msg-label">আল-আমানাহ এআই</div>
-                আস-সালামু আলাইকুম! আমি আল-আমানাহ এআই সহকারী। Groq API সংযুক্ত করলে আমি আপনার ট্রানজ্যাকশন বিশ্লেষণ, ঝুঁকি মূল্যায়ন এবং স্বচ্ছতা রিপোর্ট তৈরি করতে পারব। ⚡ Groq বাটনে ক্লিক করে শুরু করুন।
+      <!-- QR -->
+      <div>
+        <div class="stit" id="secQR">📱 বেনিফিশিয়ারি QR</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptQR">স্বচ্ছতা QR কোড</span><span class="pb pbo">স্ক্যান করুন</span></div>
+          <div class="pbd">
+            <div class="qrw">
+              <div class="qrc" id="qrBox"><span style="font-size:10px;color:#888;font-family:monospace;text-align:center;">ডোনেশনের পর<br>QR তৈরি হবে</span></div>
+              <div class="qri" id="qrInfo" style="display:none;">
+                <div class="qrr"><span class="qrk">রেফ:</span><span class="qrv" id="qRef">—</span></div>
+                <div class="qrr"><span class="qrk">খাত:</span><span class="qrv" id="qCat">—</span></div>
+                <div class="qrr"><span class="qrk">পরিমাণ:</span><span class="qrv" id="qAmt">—</span></div>
+                <div class="qrr"><span class="qrk">তারিখ:</span><span class="qrv" id="qDate">—</span></div>
+                <div class="qrr"><span class="qrk">অবস্থা:</span><span style="color:var(--g3);" id="qStat">✓ যাচাইকৃত</span></div>
               </div>
             </div>
-            <div class="chat-input-row">
-              <input class="form-input" type="text" id="chatInput"
-                placeholder="Groq AI-কে প্রশ্ন করুন..."
-                onkeydown="if(event.key==='Enter')sendChatMessage()">
-              <button class="btn-sm btn-sm-green" onclick="sendChatMessage()" id="chatSendBtn">পাঠান</button>
-            </div>
           </div>
-
-          <!-- RIGHT: AI Anomaly Analysis Panel -->
-          <div>
-            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);font-family:var(--mono);margin-bottom:10px;" id="lblAIAnalysis">
-              এআই অ্যানোমালি বিশ্লেষণ
-            </div>
-            <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:160px;" id="anomalyAnalysisBox">
-              <span style="font-size:11px;color:var(--text-dim);font-family:var(--mono);" id="anomalyPlaceholder">
-                ডোনেশন সিমুলেট করলে Groq AI স্বয়ংক্রিয়ভাবে প্যাটার্ন বিশ্লেষণ করবে...
-              </span>
-            </div>
-            <button class="btn btn-gold" style="margin-top:10px;" onclick="runAnomalyAnalysis()" id="btnAnalyze">
-              🔍 AI দিয়ে সমস্ত ট্রানজ্যাকশন বিশ্লেষণ করুন
-            </button>
-          </div>
-
         </div>
       </div>
+
+      <!-- BENEFICIARY -->
+      <div>
+        <div class="stit" id="secB">📍 বেনিফিশিয়ারি ট্র্যাকার</div>
+        <div class="pnl">
+          <div class="ph"><span class="pt" id="ptB">মাঠ পর্যায়ের যাচাই</span><span class="pb pbg">ফিল্ড অফিসার</span></div>
+          <div class="pbd"><div id="benef" style="font-size:10px;color:var(--t4);font-family:var(--mono);text-align:center;padding:14px;">ডোনেশন সিমুলেট করুন।</div></div>
+        </div>
+      </div>
+
     </div>
   </div>
-</div><!-- /.wrapper -->
+</div>
 
 <script>
-// ════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════
-let transactions = JSON.parse(localStorage.getItem('aaTransactions') || '[]');
-let threatsCount = parseInt(localStorage.getItem('aaThreats') || '0');
-let isTampered = false;
-let currentLang = 'bn';
-let qrInstance = null;
+// ═══ STATE ═══
+let txns = JSON.parse(localStorage.getItem('aa_txns')||'[]');
+let threats = parseInt(localStorage.getItem('aa_threats')||'0');
+let lang = 'bn';
+let presentMode = false;
+let t0 = Date.now();
 
-// ════════════════════════════════════════
-//  TRANSLATIONS
-// ════════════════════════════════════════
-const T = {
-  bn: {
-    logoTitle: 'আল-আমানাহ এআই গার্ড',
-    sysStatus: 'সিস্টেম সক্রিয় — সমস্ত মডিউল চালু',
-    verseText: 'নিশ্চয়ই আল্লাহ তোমাদের আদেশ করছেন আমানত তার প্রাপকের কাছে পৌঁছে দিতে। — সূরা আন-নিসা ৪:৫৮',
-    lblTotalDon: 'মোট ডোনেশন', subTotalDon: 'সেশনে সংগ্রহিত',
-    lblChainLen: 'চেইন দৈর্ঘ্য', subChain: 'অপরিবর্তনীয় ব্লক',
-    lblThreats: 'হুমকি ব্লক', subThreats: 'এআই রক্ষাকারী',
-    lblIntegrity: 'চেইন অখণ্ডতা', subIntegrity: 'সমস্ত হ্যাশ বৈধ',
-    secDonation: 'ডোনেশন সিমুলেটর',
-    ptDonate: 'নতুন ডোনেশন', pbSecure: '🔒 AES-256 সুরক্ষিত',
-    lDonor: 'দাতার নাম (PII Vault-এ এনক্রিপ্ট হবে)',
-    lPhone: 'ফোন নম্বর', lAmount: 'পরিমাণ (BDT)', lCategory: 'খাত',
-    btnSimulate: '✅ ডোনেশন সিমুলেট করুন',
-    lblSeal: '⛓️ ডিজিটাল সিল (SHA-256)', lblChainLink: '🔗 পূর্ববর্তী হ্যাশ লিংক',
-    secTamper: '⚠️ ট্যাম্পার ডেমো',
-    ptTamper: 'হ্যাক করার চেষ্টা সিমুলেশন', pbDanger: '⚡ বিপজ্জনক',
-    tamperDesc: 'কেউ যদি ডাটাবেসে ঢুকে টাকার পরিমাণ বদলানোর চেষ্টা করে, তখন কী হয় দেখুন।',
-    dtOriginal: 'মূল ডাটা', dtModified: 'পরিবর্তিত ডাটা',
-    btnTamper: '🔓 হ্যাক করার চেষ্টা করুন (Demo)',
-    btnRestore: '🔄 চেইন পুনরুদ্ধার করুন',
-    secLedger: 'আমানাহ লেজার — অপরিবর্তনীয় অডিট ট্রেইল',
-    ptLedger: 'লাইভ ট্রানজ্যাকশন চেইন', pbLive: '⚡ রিয়েল-টাইম',
-    thDonor: 'দাতা (PII)', thAmount: 'পরিমাণ', thCategory: 'খাত',
-    thRisk: 'ঝুঁকি', thHash: 'ডিজিটাল সিল', thChain: 'চেইন', thTime: 'সময়',
-    emptyMsg: '⛓️ কোনো ট্রানজ্যাকশন নেই',
-    secReport: 'এআই স্বচ্ছতা রিপোর্ট',
-    ptReport: 'স্বয়ংক্রিয় দাতার বার্তা', pbAI: '🤖 AI জেনারেটেড',
-    reportPlaceholder: 'ডোনেশন সিমুলেট করলে এখানে AI-চালিত স্বচ্ছতা রিপোর্ট তৈরি হবে...',
-    secAI: 'এআই অ্যানোমালি ডিটেক্টর',
-    ptRisk: 'রিস্ক স্কোর ইঞ্জিন', pbModel: 'v2.1 মডেল',
-    lblCurrentRisk: 'বর্তমান স্কোর', lblThreatsLog: 'সাম্প্রতিক হুমকি লগ',
-    noThreat: 'কোনো হুমকি নেই',
-    secTerminal: 'সিস্টেম টার্মিনাল', ptTerminal: 'লাইভ লগ ফিড',
-    secQR: 'বেনিফিশিয়ারি QR', ptQR: 'স্বচ্ছতা QR কোড', pbQR: 'স্ক্যান করুন',
-    qkRef: 'রেফ:', qkCat: 'খাত:', qkAmt: 'পরিমাণ:', qkDate: 'তারিখ:', qkStatus: 'অবস্থা:',
-    qvStatus: '✓ যাচাইকৃত',
-    secZakat: 'যাকাত ক্যালকুলেটর',
-    ptZakat: 'এআই স্মার্ট রাউটিং', pbZakat: 'ইসলামিক ফাইন্যান্স',
-    lGold: 'স্বর্ণ (গ্রাম)', lSavings: 'নগদ সঞ্চয় (BDT)', lBiz: 'ব্যবসায়িক সম্পদ (BDT)',
-    btnZakat: '🌙 যাকাত হিসাব করুন', lbZakatDue: 'প্রদেয় যাকাত',
-    lbSmartRoute: 'এআই স্মার্ট রাউটিং পরামর্শ',
-    secPII: 'PII ভল্ট — তথ্যের আমানত',
-    ptPII: 'ব্যক্তিগত তথ্য সুরক্ষা', pbEnc: 'AES-256 এনক্রিপ্টেড',
-    piiVaultStatus: 'ভল্ট সক্রিয় — সমস্ত PII সুরক্ষিত',
-    lblPIIDemo: 'এনক্রিপশন ডেমো',
-    piiRaw: '🔓 মূল তথ্য:', piiEnc: '🔒 ডাটাবেসে সেভ হয়:',
-    piiNote: 'হ্যাকার ডাটাবেস চুরি করলেও এই এনক্রিপ্টেড ডাটা পড়তে পারবে না। শুধুমাত্র অনুমোদিত সিস্টেম ডিক্রিপ্ট করতে পারবে।',
-    lblEncRecords: 'এনক্রিপ্টেড রেকর্ড', lblMaskedFields: 'মাস্কড ফিল্ড', lblVaultStatus: 'ভল্ট অবস্থা',
-    secBenef: 'বেনিফিশিয়ারি ট্র্যাকার',
-    ptBenef: 'মাঠ পর্যায়ের যাচাই', pbField: 'ফিল্ড অফিসার',
+// ═══ TRANSLATIONS ═══
+const TR={
+  bn:{
+    logoTitle:'আল-আমানাহ এআই গার্ড',sysStatus:'সিস্টেম সক্রিয় — সমস্ত মডিউল চালু',
+    verseText:'নিশ্চয়ই আল্লাহ তোমাদের আদেশ করছেন আমানত তার প্রাপকের কাছে পৌঁছে দিতে। — সূরা আন-নিসা ৪:৫৮',
+    lblTD:'মোট ডোনেশন',subTD:'সেশনে সংগ্রহিত',lblCL:'চেইন দৈর্ঘ্য',subCL:'অপরিবর্তনীয় ব্লক',
+    lblTH:'হুমকি ব্লক',subTH:'AI রক্ষাকারী',lblIN:'চেইন অখণ্ডতা',subIN:'সমস্ত হ্যাশ বৈধ',
+    lblUT:'আপটাইম',subUT:'নিরবচ্ছিন্ন পর্যবেক্ষণ',
+    secJ:'💸 ডোনেশন জার্নি — প্রতিটি টাকার ডিজিটাল যাত্রা',secD:'ডোনেশন সিমুলেটর',
+    ptD:'নতুন ডোনেশন',lDonor:'দাতার নাম (PII Vault)',lPhone:'ফোন নম্বর',
+    lAmount:'পরিমাণ (BDT)',lCat:'খাত',btnSim:'✅ ডোনেশন সিমুলেট করুন',
+    secT:'⚠️ ট্যাম্পার ডেমো',ptT:'হ্যাক সিমুলেশন',
+    tamperDesc:'ডাটাবেসে কেউ টাকার পরিমাণ বদলালে কী হয় — চেইন তাৎক্ষণিক ভেঙে যাবে এবং লাল অ্যালার্ম বাজবে।',
+    dtO:'মূল ডাটা',dtM:'পরিবর্তিত',btnTamp:'🔓 হ্যাক করার চেষ্টা করুন',btnRest:'🔄 চেইন পুনরুদ্ধার করুন',
+    secZ:'🌙 যাকাত ক্যালকুলেটর',ptZ:'AI স্মার্ট রাউটিং',
+    lGold:'স্বর্ণ (গ্রাম)',lSav:'নগদ সঞ্চয় (BDT)',lBiz:'ব্যবসায়িক সম্পদ (BDT)',btnZ:'🌙 যাকাত হিসাব করুন',
+    lbZD:'প্রদেয় যাকাত',lbSR:'AI স্মার্ট রাউটিং',
+    secL:'আমানাহ লেজার — অপরিবর্তনীয় অডিট ট্রেইল',ptL:'লাইভ ট্রানজ্যাকশন চেইন',
+    thDo:'দাতা (PII মাস্কড)',thAm:'পরিমাণ',thCa:'খাত',thRi:'AI ঝুঁকি',thHa:'ডিজিটাল সিল',thCh:'চেইন',thTi:'সময়',
+    emptyMsg:'⛓️ কোনো ট্রানজ্যাকশন নেই — ডোনেশন করুন বা Demo ক্লিক করুন',
+    secR:'🤖 AI স্বচ্ছতা রিপোর্ট',ptR:'স্বয়ংক্রিয় দাতার বার্তা',
+    repPH:'ডোনেশন সিমুলেট করলে AI স্বচ্ছতা রিপোর্ট তৈরি হবে...',
+    secP:'🔐 PII ভল্ট — তথ্যের আমানত',ptP:'ব্যক্তিগত তথ্য সুরক্ষা',piiStat:'VAULT SEALED',
+    lblER:'এনক্রিপ্টেড রেকর্ড',lblMF:'মাস্কড ফিল্ড',lblDB:'ডাটা ব্রিচ',
+    piiRaw:'🔓 মূল তথ্য (ডাটাবেসে যায় না):',piiEnc:'🔒 ডাটাবেসে সেভ হয়:',
+    piiNote:'হ্যাকার ডাটাবেস চুরি করলেও ব্যক্তিগত তথ্য পড়তে পারবে না।',
+    secAI:'🤖 AI অ্যানোমালি ডিটেক্টর',ptAI:'রিস্ক স্কোর ইঞ্জিন',lblRisk:'বর্তমান স্কোর',lblTL:'হুমকি লগ',
+    noThreat:'কোনো হুমকি নেই',secTerm:'💻 সিস্টেম টার্মিনাল',ptTerm:'লাইভ লগ ফিড',
+    secQR:'📱 বেনিফিশিয়ারি QR',ptQR:'স্বচ্ছতা QR কোড',secB:'📍 বেনিফিশিয়ারি ট্র্যাকার',ptB:'মাঠ পর্যায়ের যাচাই',
   },
-  en: {
-    logoTitle: 'Al-Amanah AI Guard',
-    sysStatus: 'SYSTEM ACTIVE — ALL MODULES OPERATIONAL',
-    verseText: 'Indeed, Allah commands you to render trusts to whom they are due. — An-Nisa 4:58',
-    lblTotalDon: 'Total Donations', subTotalDon: 'Collected this session',
-    lblChainLen: 'Chain Length', subChain: 'Immutable blocks',
-    lblThreats: 'Threats Blocked', subThreats: 'AI Protection',
-    lblIntegrity: 'Chain Integrity', subIntegrity: 'All hashes valid',
-    secDonation: 'Donation Simulator',
-    ptDonate: 'New Donation', pbSecure: '🔒 AES-256 Protected',
-    lDonor: 'Donor Name (Encrypted in PII Vault)',
-    lPhone: 'Phone Number', lAmount: 'Amount (BDT)', lCategory: 'Category',
-    btnSimulate: '✅ Simulate Donation',
-    lblSeal: '⛓️ Digital Seal (SHA-256)', lblChainLink: '🔗 Previous Hash Link',
-    secTamper: '⚠️ Tamper Demo',
-    ptTamper: 'Hack Attempt Simulation', pbDanger: '⚡ Dangerous',
-    tamperDesc: 'Watch what happens if someone tries to change the amount in the database.',
-    dtOriginal: 'Original Data', dtModified: 'Modified Data',
-    btnTamper: '🔓 Attempt a Hack (Demo)',
-    btnRestore: '🔄 Restore Chain',
-    secLedger: 'Amanah Ledger — Immutable Audit Trail',
-    ptLedger: 'Live Transaction Chain', pbLive: '⚡ Real-Time',
-    thDonor: 'Donor (PII)', thAmount: 'Amount', thCategory: 'Category',
-    thRisk: 'Risk', thHash: 'Digital Seal', thChain: 'Chain', thTime: 'Time',
-    emptyMsg: '⛓️ No transactions yet',
-    secReport: 'AI Transparency Report',
-    ptReport: 'Auto Donor Message', pbAI: '🤖 AI Generated',
-    reportPlaceholder: 'Simulate a donation to see the AI transparency report...',
-    secAI: 'AI Anomaly Detector',
-    ptRisk: 'Risk Score Engine', pbModel: 'v2.1 Model',
-    lblCurrentRisk: 'Current Score', lblThreatsLog: 'Recent Threat Log',
-    noThreat: 'No threats detected',
-    secTerminal: 'System Terminal', ptTerminal: 'Live Log Feed',
-    secQR: 'Beneficiary QR', ptQR: 'Transparency QR Code', pbQR: 'Scan to verify',
-    qkRef: 'Ref:', qkCat: 'Category:', qkAmt: 'Amount:', qkDate: 'Date:', qkStatus: 'Status:',
-    qvStatus: '✓ Verified',
-    secZakat: 'Zakat Calculator',
-    ptZakat: 'AI Smart Routing', pbZakat: 'Islamic Finance',
-    lGold: 'Gold (grams)', lSavings: 'Cash Savings (BDT)', lBiz: 'Business Assets (BDT)',
-    btnZakat: '🌙 Calculate Zakat', lbZakatDue: 'Zakat Due',
-    lbSmartRoute: 'AI Smart Routing Suggestion',
-    secPII: 'PII Vault — Privacy Amanah',
-    ptPII: 'Personal Data Protection', pbEnc: 'AES-256 Encrypted',
-    piiVaultStatus: 'Vault Active — All PII Protected',
-    lblPIIDemo: 'Encryption Demo',
-    piiRaw: '🔓 Raw Data:', piiEnc: '🔒 Stored in DB:',
-    piiNote: 'Even if a hacker steals the database, they cannot read the encrypted data. Only authorized systems can decrypt.',
-    lblEncRecords: 'Encrypted Records', lblMaskedFields: 'Masked Fields', lblVaultStatus: 'Vault Status',
-    secBenef: 'Beneficiary Tracker',
-    ptBenef: 'Field-Level Verification', pbField: 'Field Officer',
+  en:{
+    logoTitle:'Al-Amanah AI Guard',sysStatus:'SYSTEM ACTIVE — ALL MODULES OPERATIONAL',
+    verseText:'Indeed, Allah commands you to render trusts to whom they are due. — An-Nisa 4:58',
+    lblTD:'Total Donations',subTD:'Collected this session',lblCL:'Chain Length',subCL:'Immutable blocks',
+    lblTH:'Threats Blocked',subTH:'AI Protection',lblIN:'Chain Integrity',subIN:'All hashes valid',
+    lblUT:'Uptime',subUT:'Continuous monitoring',
+    secJ:'💸 Donation Journey — Digital Money Trail',secD:'Donation Simulator',
+    ptD:'New Donation',lDonor:'Donor Name (PII Vault)',lPhone:'Phone Number',
+    lAmount:'Amount (BDT)',lCat:'Category',btnSim:'✅ Simulate Donation',
+    secT:'⚠️ Tamper Demo',ptT:'Hack Simulation',
+    tamperDesc:'Watch what happens if someone changes the amount in the database — chain breaks instantly.',
+    dtO:'Original Data',dtM:'Modified',btnTamp:'🔓 Attempt a Hack (Demo)',btnRest:'🔄 Restore Chain',
+    secZ:'🌙 Zakat Calculator',ptZ:'AI Smart Routing',
+    lGold:'Gold (grams)',lSav:'Cash Savings (BDT)',lBiz:'Business Assets (BDT)',btnZ:'🌙 Calculate Zakat',
+    lbZD:'Zakat Due',lbSR:'AI Smart Routing',
+    secL:'Amanah Ledger — Immutable Audit Trail',ptL:'Live Transaction Chain',
+    thDo:'Donor (PII Masked)',thAm:'Amount',thCa:'Category',thRi:'AI Risk',thHa:'Digital Seal',thCh:'Chain',thTi:'Time',
+    emptyMsg:'⛓️ No transactions — Simulate a donation or click Demo',
+    secR:'🤖 AI Transparency Report',ptR:'Auto Donor Message',
+    repPH:'Simulate a donation to see the AI transparency report...',
+    secP:'🔐 PII Vault — Privacy Amanah',ptP:'Personal Data Protection',piiStat:'VAULT SEALED',
+    lblER:'Encrypted Records',lblMF:'Masked Fields',lblDB:'Data Breaches',
+    piiRaw:'🔓 Raw Data (never stored in DB):',piiEnc:'🔒 What is stored in DB:',
+    piiNote:'Even if a hacker steals the database, they cannot read personal data.',
+    secAI:'🤖 AI Anomaly Detector',ptAI:'Risk Score Engine',lblRisk:'Current Score',lblTL:'Threat Log',
+    noThreat:'No threats detected',secTerm:'💻 System Terminal',ptTerm:'Live Log Feed',
+    secQR:'📱 Beneficiary QR',ptQR:'Transparency QR Code',secB:'📍 Beneficiary Tracker',ptB:'Field-Level Verification',
   }
 };
 
-function setLang(lang) {
-  currentLang = lang;
-  document.getElementById('btnBn').classList.toggle('active', lang === 'bn');
-  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
-  const t = T[lang];
-  Object.keys(t).forEach(k => {
-    const el = document.getElementById(k);
-    if (el) el.textContent = t[k];
-  });
+function setLang(l){
+  lang=l;
+  document.getElementById('btnBn').classList.toggle('on',l==='bn');
+  document.getElementById('btnEn').classList.toggle('on',l==='en');
+  const t=TR[l];
+  Object.keys(t).forEach(k=>{const el=document.getElementById(k);if(el)el.textContent=t[k];});
 }
 
-// ════════════════════════════════════════
-//  CLOCK
-// ════════════════════════════════════════
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+// ═══ CLOCK ═══
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');
+  const s=Math.floor((Date.now()-t0)/1000);
+  const m=Math.floor(s/60);
+  document.getElementById('uptime').textContent=m>0?`${m}m ${s%60}s`:`${s}s`;
 }
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(tick,1000);tick();
 
-// ════════════════════════════════════════
-//  SHA-256 HASH
-// ════════════════════════════════════════
-async function sha256(message) {
-  const msgUint8 = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+// ═══ PRESENT MODE ═══
+function togglePresent(){
+  presentMode=!presentMode;
+  document.getElementById('leftCol').style.display=presentMode?'none':'flex';
+  const btn=document.getElementById('btnPresent');
+  btn.textContent=presentMode?'❌ Exit Present':'🖥️ Present Mode';
+  btn.classList.toggle('pre',presentMode);
+  addLog(presentMode?'[PRESENT] 🖥️ Presentation mode ON':'[PRESENT] Normal mode restored','lgo');
 }
 
-function shortHash(h) { return h.substring(0,8) + '...' + h.substring(h.length-8); }
-
-// ════════════════════════════════════════
-//  PII MASKING
-// ════════════════════════════════════════
-function maskName(name) {
-  if (!name) return '██████';
-  const words = name.trim().split(' ');
-  return words.map(w => w[0] + '█'.repeat(Math.max(w.length-1,2))).join(' ');
+// ═══ SHA-256 ═══
+async function sha256(msg){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
+const sh=h=>h.slice(0,8)+'...'+h.slice(-6);
 
-function maskPhone(phone) {
-  if (!phone) return '01█████████';
-  return phone.substring(0,4) + '█████' + phone.substring(phone.length-2);
-}
+// ═══ PII ═══
+const maskN=n=>n?n.trim().split(' ').map(w=>w[0]+'█'.repeat(Math.max(w.length-1,2))).join(' '):'██████';
+const maskP=p=>p?p.slice(0,4)+'█████'+p.slice(-2):'01█████████';
+const fakeAES=()=>{let r='U2FsdGVkX1+';const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';for(let i=0;i<36;i++)r+=c[Math.floor(Math.random()*c.length)];return r+'...';};
 
-function fakeAES(str) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let result = 'U2FsdGVkX1+';
-  for (let i = 0; i < 32; i++) result += chars[Math.floor(Math.random()*chars.length)];
-  return result + '...';
-}
-
-// ════════════════════════════════════════
-//  RISK SCORING ENGINE
-// ════════════════════════════════════════
-function calculateRisk(amount, donor, recentCount) {
-  let score = 0;
-  let flags = [];
-
-  // Card testing: very small repeated amounts
-  if (amount < 100 && recentCount > 2) {
-    score += 60;
-    flags.push({ type:'block', icon:'🚫', text: currentLang==='bn' ? 'কার্ড টেস্টিং সন্দেহজনক: ছোট ট্রানজ্যাকশন বারবার' : 'Suspicious card testing: repeated small transactions' });
-  }
-
-  // Very large single donation
-  if (amount > 500000) {
-    score += 45;
-    flags.push({ type:'warn', icon:'⚠️', text: currentLang==='bn' ? 'অস্বাভাবিক বড় পরিমাণ — ম্যানুয়াল যাচাই প্রয়োজন' : 'Unusually large amount — manual review required' });
-  }
-
-  // Rapid transactions
-  if (recentCount >= 4) {
-    score += 35;
-    flags.push({ type:'warn', icon:'⚡', text: currentLang==='bn' ? 'দ্রুত ধারাবাহিক ট্রানজ্যাকশন — রেট লিমিট সক্রিয়' : 'Rapid consecutive transactions — rate limit active' });
-  }
-
-  // Round number anomaly
-  if (amount % 10000 === 0 && amount >= 50000) {
-    score += 15;
-    flags.push({ type:'warn', icon:'🔢', text: currentLang==='bn' ? 'গোল সংখ্যার প্যাটার্ন — মানি লন্ডারিং সংকেত' : 'Round number pattern — potential structuring' });
-  }
-
-  // Positive signals
-  if (amount >= 500 && amount <= 50000 && recentCount <= 2) {
-    score = Math.max(0, score - 10);
-    flags.push({ type:'ok', icon:'✅', text: currentLang==='bn' ? 'স্বাভাবিক ডোনেশন প্যাটার্ন — অনুমোদিত' : 'Normal donation pattern — approved' });
-  }
-
-  score = Math.min(100, Math.max(0, score + Math.floor(Math.random() * 8)));
-  return { score, flags };
-}
-
-function updateRiskMeter(score, flags) {
-  const val = document.getElementById('riskScoreVal');
-  const bar = document.getElementById('riskBarFill');
-  const status = document.getElementById('riskStatusText');
-
-  val.textContent = score + '/100';
-
-  if (score < 30) {
-    val.className = 'risk-val low';
-    bar.style.background = 'linear-gradient(90deg, var(--green-main), var(--green-bright))';
-    status.style.color = 'var(--green-glow)';
-    status.textContent = currentLang==='bn' ? '✓ ঝুঁকি কম — স্বয়ংক্রিয় অনুমোদন' : '✓ Low Risk — Auto Approved';
-  } else if (score < 65) {
-    val.className = 'risk-val mid';
-    bar.style.background = 'linear-gradient(90deg, var(--green-main), var(--amber))';
-    status.style.color = 'var(--amber)';
-    status.textContent = currentLang==='bn' ? '⚠️ মাঝারি ঝুঁকি — পর্যবেক্ষণে' : '⚠️ Medium Risk — Under Review';
-  } else {
-    val.className = 'risk-val high';
-    bar.style.background = 'linear-gradient(90deg, var(--amber), var(--red-glow))';
-    status.style.color = 'var(--red-glow)';
-    status.textContent = currentLang==='bn' ? '🚫 উচ্চ ঝুঁকি — ব্লক করা হয়েছে' : '🚫 High Risk — BLOCKED';
-    threatsCount++;
-    localStorage.setItem('aaThreats', threatsCount);
-    document.getElementById('threatsBlocked').textContent = threatsCount;
-  }
-
-  bar.style.width = score + '%';
-
-  // Update threat list
-  const list = document.getElementById('threatList');
-  if (flags.length > 0) {
-    list.innerHTML = '';
-    const now = new Date().toLocaleTimeString();
-    flags.slice(0,3).forEach(f => {
-      const div = document.createElement('div');
-      div.className = `threat-item type-${f.type}`;
-      div.innerHTML = `<div class="threat-icon">${f.icon}</div><div><div class="threat-desc">${f.text}</div><div class="threat-time">${now}</div></div>`;
-      list.appendChild(div);
-    });
+// ═══ JOURNEY ═══
+function animJourney(hash,risk,cat){
+  const hs=['গৃহীত ✓',`ঝুঁকি: ${risk}/100 ${risk<30?'🟢':risk<65?'🟡':'🔴'}`,sh(hash),`খাত: ${cat}`,'পৌঁছে গেছে ✅'];
+  const pcts=[0,25,50,75,100];
+  for(let i=0;i<5;i++){
+    setTimeout(()=>{
+      document.getElementById('jc'+i).className='jcirc done';
+      document.getElementById('jl'+i).className='jlbl done';
+      document.getElementById('jh'+i).textContent=hs[i];
+      document.getElementById('jh'+i).className='jhash done';
+      document.getElementById('jfill').style.width=pcts[i]+'%';
+    },i*400);
   }
 }
 
-// ════════════════════════════════════════
-//  TERMINAL LOGGING
-// ════════════════════════════════════════
-function addLog(msg, type='info') {
-  const term = document.getElementById('terminal');
-  const now = new Date().toLocaleTimeString('en-GB');
-  const line = document.createElement('div');
-  line.className = 'log-line fade-in';
-  line.innerHTML = `<span class="log-time">[${now}]</span> <span class="log-${type}">${msg}</span>`;
-  term.appendChild(line);
-  term.scrollTop = term.scrollHeight;
-  // Keep max 40 lines
-  while (term.children.length > 40) term.removeChild(term.firstChild);
+// ═══ RISK ENGINE ═══
+function calcRisk(amt,recent){
+  let s=0,flags=[];
+  const bn=lang==='bn';
+  if(amt<100&&recent>2){s+=65;flags.push({t:'tbl',i:'🚫',m:bn?'কার্ড টেস্টিং: ছোট ট্রানজ্যাকশন বারবার':'Card testing: repeated micro-transactions'});}
+  if(amt>500000){s+=45;flags.push({t:'twn',i:'⚠️',m:bn?'অস্বাভাবিক বড় পরিমাণ — ম্যানুয়াল যাচাই':'Unusually large — manual review required'});}
+  if(recent>=5){s+=38;flags.push({t:'twn',i:'⚡',m:bn?'দ্রুত ধারাবাহিক ট্রানজ্যাকশন':'Rapid consecutive transactions'});}
+  if(amt%10000===0&&amt>=100000){s+=16;flags.push({t:'twn',i:'🔢',m:bn?'গোল সংখ্যার প্যাটার্ন — স্ট্রাকচারিং':'Round number — possible structuring'});}
+  if(s===0&&amt>=500&&amt<=50000)flags.push({t:'tok',i:'✅',m:bn?'স্বাভাবিক প্যাটার্ন — অনুমোদিত':'Normal pattern — auto-approved'});
+  return{s:Math.min(100,Math.max(0,s+Math.floor(Math.random()*6))),flags};
 }
 
-// ════════════════════════════════════════
-//  TRANSPARENCY REPORT (AI-style)
-// ════════════════════════════════════════
-function generateReport(tx) {
-  const reports_bn = [
-    `প্রিয় দাতা,\n\nআপনার ৳${tx.amount.toLocaleString()} টাকার আমানত আল-আমানাহ সিস্টেমে নিরাপদে সংরক্ষিত হয়েছে। এই অর্থ "${tx.category}" খাতে বরাদ্দ করা হয়েছে।\n\n🔗 ডিজিটাল সিল: ${tx.hash.substring(0,16)}...\n✓ PII এনক্রিপ্টেড\n✓ চেইন যাচাইকৃত\n\nআল্লাহ আপনার দানকে কবুল করুন। — আল-আমানাহ এআই গার্ড`,
-    `আস-সুন্নাহ ফাউন্ডেশন আপনার ৳${tx.amount.toLocaleString()} টাকার দানের জন্য কৃতজ্ঞ। এই মুহূর্তে আপনার অর্থ "${tx.category}" প্রজেক্টের দিকে রাউট করা হয়েছে।\n\n🛡️ নিরাপত্তা স্তর: ব্যাংকিং গ্রেড\n🔒 তথ্য: সম্পূর্ণ গোপন\n⛓️ হ্যাশ: ${tx.hash.substring(0,12)}...\n\nজাযাকাল্লাহু খাইরান।`,
-    `ট্রানজ্যাকশন রিপোর্ট:\n\nআপনার দান ৳${tx.amount.toLocaleString()} সফলভাবে প্রক্রিয়া হয়েছে। ঝুঁকি মূল্যায়ন: ${tx.risk}/100 — স্বাভাবিক।\n\nএই অর্থের যাত্রা:\n① গ্রহণ → ② হ্যাশিং → ③ বরাদ্দ → ④ বিতরণ\n\nপ্রতিটি ধাপ অডিট-প্রমাণিত এবং অপরিবর্তনীয়।`,
+function showRisk(score,flags){
+  const bn=lang==='bn';
+  document.getElementById('riskVal').textContent=score+'/100';
+  const bar=document.getElementById('riskBar'),st=document.getElementById('riskSt'),rv=document.getElementById('riskVal');
+  if(score<30){rv.className='rv low';bar.style.background='linear-gradient(90deg,var(--g1),var(--g2))';st.style.color='var(--g3)';st.textContent=bn?'✓ ঝুঁকি কম — স্বয়ংক্রিয় অনুমোদন':'✓ Low Risk — Auto Approved';}
+  else if(score<65){rv.className='rv mid';bar.style.background='linear-gradient(90deg,var(--g1),var(--amb))';st.style.color='var(--amb)';st.textContent=bn?'⚠️ মাঝারি ঝুঁকি — পর্যবেক্ষণে':'⚠️ Medium Risk — Under Review';}
+  else{rv.className='rv hig';bar.style.background='linear-gradient(90deg,var(--amb),var(--redG))';st.style.color='var(--redG)';st.textContent=bn?'🚫 উচ্চ ঝুঁকি — ব্লক!':'🚫 High Risk — BLOCKED!';threats++;localStorage.setItem('aa_threats',threats);document.getElementById('threatsCnt').textContent=threats;}
+  bar.style.width=score+'%';
+  const tl=document.getElementById('threatL');
+  if(flags.length){tl.innerHTML='';const now=new Date().toLocaleTimeString();flags.slice(0,3).forEach(f=>{const d=document.createElement('div');d.className=`thi ${f.t}`;d.innerHTML=`<div class="thic">${f.i}</div><div><div class="thdesc">${f.m}</div><div class="thtm">${now}</div></div>`;tl.appendChild(d);});}
+}
+
+// ═══ LOG ═══
+function addLog(msg,type='li2'){
+  const t=document.getElementById('terminal');
+  const now=new Date().toLocaleTimeString('en-GB');
+  const d=document.createElement('div');d.className='ll fi2';
+  d.innerHTML=`<span class="lt2">[${now}]</span><span class="${type}">${msg}</span>`;
+  t.appendChild(d);t.scrollTop=t.scrollHeight;
+  while(t.children.length>55)t.removeChild(t.firstChild);
+}
+
+// ═══ REPORT ═══
+function genReport(tx){
+  const bn=lang==='bn';
+  const reps_bn=[
+    `প্রিয় দাতা,\n\nআপনার ৳${tx.amt.toLocaleString()} টাকার আমানত সুরক্ষিতভাবে "${tx.cat}" খাতে বরাদ্দ হয়েছে।\n\n🔗 ডিজিটাল সিল: ${tx.hash.slice(0,16)}...\n✓ PII এনক্রিপ্টেড\n✓ চেইন যাচাইকৃত\n✓ AI ঝুঁকি স্কোর: ${tx.risk}/100\n\nআল্লাহ আপনার দানকে কবুল করুন।\n— আল-আমানাহ এআই গার্ড`,
+    `আস-সুন্নাহ ফাউন্ডেশন আপনার ৳${tx.amt.toLocaleString()} দানের জন্য কৃতজ্ঞ।\n\n"${tx.cat}" প্রজেক্টে রাউট হয়েছে।\n🛡️ ব্যাংকিং গ্রেড সুরক্ষা\n⛓️ Block ID: ASF-${tx.id}\n🤖 AI Risk: ${tx.risk}/100\n\nজাযাকাল্লাহু খাইরান।`,
+    `ট্রানজ্যাকশন রিপোর্ট — ASF-${tx.id}\n\nটাকার যাত্রা:\n① গ্রহণ ✓ → ② AI যাচাই ✓\n③ হ্যাশ সিল ✓ → ④ বরাদ্দ ✓\n⑤ সুবিধাভোগী ✓\n\nপ্রতিটি ধাপ অপরিবর্তনীয় ও অডিট-প্রমাণিত।`,
   ];
-  const reports_en = [
-    `Dear Donor,\n\nYour trust of ৳${tx.amount.toLocaleString()} has been securely registered in the Al-Amanah system. Funds have been allocated to "${tx.category}".\n\n🔗 Digital Seal: ${tx.hash.substring(0,16)}...\n✓ PII Encrypted\n✓ Chain Verified\n\nMay Allah accept your donation. — Al-Amanah AI Guard`,
-    `As-Sunnah Foundation thanks you for your ৳${tx.amount.toLocaleString()} donation. Your funds are now routed to the "${tx.category}" project.\n\n🛡️ Security Level: Banking Grade\n🔒 Data: Fully Private\n⛓️ Hash: ${tx.hash.substring(0,12)}...\n\nJazakallahu Khayran.`,
-    `Transaction Report:\n\nYour donation of ৳${tx.amount.toLocaleString()} processed successfully. Risk score: ${tx.risk}/100 — Normal.\n\nFund journey:\n① Received → ② Hashed → ③ Allocated → ④ Distributed\n\nEvery step is audit-proven and immutable.`,
+  const reps_en=[
+    `Dear Donor,\n\nYour ৳${tx.amt.toLocaleString()} has been securely allocated to "${tx.cat}".\n\n🔗 Digital Seal: ${tx.hash.slice(0,16)}...\n✓ PII Encrypted | ✓ Chain Verified\n✓ AI Risk Score: ${tx.risk}/100\n\nMay Allah accept your donation.\n— Al-Amanah AI Guard`,
+    `As-Sunnah Foundation thanks you for ৳${tx.amt.toLocaleString()}.\n\nRouted to "${tx.cat}" project.\n🛡️ Banking Grade Security\n⛓️ Block ID: ASF-${tx.id}\n\nJazakallahu Khayran.`,
+    `Transaction Report — ASF-${tx.id}\n\nMoney journey:\n① Received ✓ → ② AI Verified ✓\n③ Hash Sealed ✓ → ④ Allocated ✓\n⑤ Beneficiary ✓\n\nEvery step is immutable and audit-proven.`,
   ];
-  const reports = currentLang === 'bn' ? reports_bn : reports_en;
-  return reports[Math.floor(Math.random() * reports.length)];
+  return (bn?reps_bn:reps_en)[Math.floor(Math.random()*3)];
 }
 
-function typeReport(text) {
-  const box = document.getElementById('reportBox');
-  box.innerHTML = '';
-  let i = 0;
-  const cursor = document.createElement('span');
-  cursor.className = 'typing-cursor';
-
-  function type() {
-    if (i < text.length) {
-      const char = text[i];
-      if (char === '\n') {
-        box.appendChild(document.createElement('br'));
-      } else {
-        box.appendChild(document.createTextNode(char));
-      }
-      i++;
-      box.appendChild(cursor);
-      setTimeout(type, 18 + Math.random() * 12);
-    } else {
-      cursor.remove();
-    }
-  }
-  type();
+function typeRep(text){
+  const box=document.getElementById('repBox');box.innerHTML='';
+  let i=0;const cur=document.createElement('span');cur.className='cur';
+  function go(){if(i<text.length){const c=text[i];if(c==='\n')box.appendChild(document.createElement('br'));else box.appendChild(document.createTextNode(c));i++;box.appendChild(cur);setTimeout(go,14+Math.random()*8);}else cur.remove();}
+  go();
 }
 
-// ════════════════════════════════════════
-//  QR CODE GENERATION
-// ════════════════════════════════════════
-function generateQR(tx) {
-  const qrData = `AS-SUNNAH FOUNDATION\nRef: ASF-${tx.id}\nCat: ${tx.category}\nAmt: BDT ${tx.amount}\nDate: ${tx.date}\nHash: ${tx.hash.substring(0,16)}\nStatus: VERIFIED`;
-
-  const container = document.getElementById('qrContainer');
-  container.innerHTML = '';
-
-  try {
-    new QRCode(container, {
-      text: qrData,
-      width: 110, height: 110,
-      colorDark: '#1b5e20',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch(e) {
-    container.innerHTML = `<div style="font-size:9px;color:#1b5e20;font-family:monospace;text-align:center;padding:4px;">ASF-${tx.id}<br>QR VERIFIED</div>`;
-  }
-
-  document.getElementById('qvRef').textContent = 'ASF-' + tx.id;
-  document.getElementById('qvCat').textContent = tx.category;
-  document.getElementById('qvAmt').textContent = '৳' + tx.amount.toLocaleString();
-  document.getElementById('qvDate').textContent = tx.date;
-  document.getElementById('qvStatus').textContent = currentLang==='bn' ? '✓ যাচাইকৃত' : '✓ Verified';
-  document.getElementById('qrInfo').style.display = 'block';
+// ═══ QR ═══
+function makeQR(tx){
+  const data=`AS-SUNNAH\nRef:ASF-${tx.id}\nAmt:BDT ${tx.amt}\nCat:${tx.cat}\nDate:${tx.date}\nHash:${tx.hash.slice(0,14)}\nStatus:VERIFIED`;
+  const box=document.getElementById('qrBox');box.innerHTML='';
+  try{new QRCode(box,{text:data,width:96,height:96,colorDark:'#1b5e20',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}
+  catch(e){box.innerHTML=`<div style="font-size:9px;color:#1b5e20;font-family:monospace;text-align:center;">ASF-${tx.id}<br>✓ VERIFIED</div>`;}
+  document.getElementById('qRef').textContent='ASF-'+tx.id;
+  document.getElementById('qCat').textContent=tx.cat;
+  document.getElementById('qAmt').textContent='৳'+tx.amt.toLocaleString();
+  document.getElementById('qDate').textContent=tx.date;
+  document.getElementById('qStat').textContent=lang==='bn'?'✓ যাচাইকৃত':'✓ Verified';
+  document.getElementById('qrInfo').style.display='block';
 }
 
-// ════════════════════════════════════════
-//  BENEFICIARY TRACKER
-// ════════════════════════════════════════
-const beneficiaries_bn = {
-  'এতিমখানা': { name: 'এতিমখানা — ঢাকা উত্তর', officer: 'আবু বকর সিদ্দিক', status: '৩ মাসের রেশন বরাদ্দ' },
-  'নলকূপ': { name: 'গ্রামীণ পানি প্রকল্প — রাজশাহী', officer: 'ওমর ফারুক', status: 'নলকূপ স্থাপন প্রক্রিয়াধীন' },
-  'শিক্ষা': { name: 'বৃত্তি প্রকল্প — সিলেট', officer: 'আয়েশা সিদ্দিকা', status: '১২ শিক্ষার্থী নির্বাচিত' },
-  'বিধবা': { name: 'বিধবা সহায়তা — চট্টগ্রাম', officer: 'খাদিজা বেগম', status: 'মাসিক সহায়তা চালু' },
-  'কুরবানী': { name: 'কুরবানী মাংস বিতরণ', officer: 'আলী হাসান', status: 'তালিকা প্রস্তুতি চলছে' },
-  'রোহিঙ্গা': { name: 'রোহিঙ্গা ক্যাম্প — কক্সবাজার', officer: 'ইউনুস আহমেদ', status: 'ত্রাণ বিতরণ সম্পন্ন' },
+// ═══ BENEFICIARY ═══
+const BEN={
+  'এতিমখানা':{n_bn:'এতিমখানা — ঢাকা উত্তর',n_en:'Orphanage — Dhaka North',o:'আবু বকর সিদ্দিক',s_bn:'৩ মাসের রেশন বরাদ্দ',s_en:'3-month ration allocated'},
+  'নলকূপ':{n_bn:'গ্রামীণ পানি — রাজশাহী',n_en:'Rural Water — Rajshahi',o:'ওমর ফারুক',s_bn:'নলকূপ স্থাপন চলছে',s_en:'Installation ongoing'},
+  'শিক্ষা':{n_bn:'বৃত্তি প্রজেক্ট — সিলেট',n_en:'Scholarship — Sylhet',o:'আয়েশা সিদ্দিকা',s_bn:'১২ শিক্ষার্থী নির্বাচিত',s_en:'12 students selected'},
+  'বিধবা':{n_bn:'বিধবা সহায়তা — চট্টগ্রাম',n_en:'Widow Support — Chittagong',o:'খাদিজা বেগম',s_bn:'মাসিক সহায়তা চালু',s_en:'Monthly support active'},
+  'কুরবানী':{n_bn:'কুরবানী বিতরণ',n_en:'Qurbani Distribution',o:'আলী হাসান',s_bn:'তালিকা প্রস্তুত',s_en:'List ready'},
+  'রোহিঙ্গা':{n_bn:'রোহিঙ্গা ক্যাম্প — কক্সবাজার',n_en:"Rohingya Camp — Cox's Bazar",o:'ইউনুস আহমেদ',s_bn:'ত্রাণ বিতরণ সম্পন্ন',s_en:'Relief distributed'},
 };
 
-const beneficiaries_en = {
-  'এতিমখানা': { name: 'Orphanage — Dhaka North', officer: 'Abu Bakr Siddique', status: '3-month ration allocated' },
-  'নলকূপ': { name: 'Rural Water Project — Rajshahi', officer: 'Omar Faruk', status: 'Tube well installation in progress' },
-  'শিক্ষা': { name: 'Scholarship Program — Sylhet', officer: 'Ayesha Siddika', status: '12 students selected' },
-  'বিধবা': { name: 'Widow Support — Chittagong', officer: 'Khadija Begum', status: 'Monthly support active' },
-  'কুরবানী': { name: 'Qurbani Meat Distribution', officer: 'Ali Hasan', status: 'List preparation ongoing' },
-  'রোহিঙ্গা': { name: 'Rohingya Camp — Cox\'s Bazar', officer: 'Yunus Ahmed', status: 'Relief distributed' },
-};
-
-function updateBeneficiary(category) {
-  const b = currentLang === 'bn' ? (beneficiaries_bn[category] || beneficiaries_bn['এতিমখানা']) : (beneficiaries_en[category] || beneficiaries_en['এতিমখানা']);
-  const now = new Date().toLocaleDateString(currentLang === 'bn' ? 'bn-BD' : 'en-GB');
-  const list = document.getElementById('benefList');
-  list.innerHTML = `
-    <div style="background:rgba(46,125,50,0.08);border:1px solid rgba(46,125,50,0.3);border-radius:8px;padding:14px;font-size:11px;">
-      <div style="font-size:14px;margin-bottom:10px;text-align:center;">📍</div>
-      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text-dim);">${currentLang==='bn'?'প্রকল্প:':'Project:'}</span><span style="color:var(--text-primary);font-weight:600;">${b.name}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text-dim);">${currentLang==='bn'?'অফিসার:':'Officer:'}</span><span style="color:var(--text-secondary);">${b.officer}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text-dim);">${currentLang==='bn'?'অবস্থা:':'Status:'}</span><span style="color:var(--green-glow);">✓ ${b.status}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="color:var(--text-dim);">${currentLang==='bn'?'তারিখ:':'Date:'}</span><span style="color:var(--text-secondary);font-family:var(--mono);">${now}</span></div>
-      <div style="margin-top:10px;padding:8px;background:rgba(46,125,50,0.1);border-radius:6px;text-align:center;color:var(--green-glow);font-family:var(--mono);font-size:10px;">
-        🔗 ${currentLang==='bn'?'ব্লকচেইন যাচাইকৃত — অপরিবর্তনীয়':'Blockchain Verified — Immutable'}
-      </div>
-    </div>
-  `;
-}
-
-// ════════════════════════════════════════
-//  MAIN: SIMULATE DONATION
-// ════════════════════════════════════════
-async function simulateDonation() {
-  const donor = document.getElementById('inputDonor').value.trim() || (currentLang==='bn' ? 'বেনামী দাতা' : 'Anonymous Donor');
-  const phone = document.getElementById('inputPhone').value.trim() || '01700000000';
-  const amount = parseFloat(document.getElementById('inputAmount').value) || Math.floor(Math.random()*9000+1000);
-  const category = document.getElementById('inputCategory').value;
-
-  const btn = document.getElementById('btnSimulate');
-  btn.textContent = currentLang==='bn' ? '⏳ প্রক্রিয়া হচ্ছে...' : '⏳ Processing...';
-  btn.disabled = true;
-
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-GB');
-  const dateStr = now.toLocaleDateString(currentLang==='bn' ? 'bn-BD' : 'en-GB');
-  const id = String(Date.now()).slice(-6);
-
-  addLog(`[INTAKE] ${currentLang==='bn'?'নতুন ডোনেশন গৃহীত':'New donation received'} — ৳${amount}`, 'info');
-
-  // PII Masking
-  const maskedName = maskName(donor);
-  const maskedPhone = maskPhone(phone);
-  addLog(`[PII-VAULT] ${currentLang==='bn'?'ব্যক্তিগত তথ্য এনক্রিপ্ট করা হচ্ছে':'Encrypting personal data'} → AES-256`, 'gold');
-
-  // Get previous hash
-  const prevHash = transactions.length > 0 ? transactions[transactions.length-1].hash : '0000000000000000000000000000000000000000000000000000000000000000';
-
-  // Generate hash
-  const rawData = `id:${id}|donor:${donor}|amount:${amount}|cat:${category}|time:${now.toISOString()}|prev:${prevHash}`;
-  addLog(`[HASHING] SHA-256 ${currentLang==='bn'?'চলছে':'running'}...`, 'info');
-
-  const hash = await sha256(rawData);
-
-  // Risk scoring
-  const recentCount = transactions.filter(t => Date.now() - t.timestamp < 180000).length;
-  const { score, flags } = calculateRisk(amount, donor, recentCount + 1);
-
-  addLog(`[RISK-ENGINE] ${currentLang==='bn'?'স্কোর':'Score'}: ${score}/100 — ${score < 30 ? (currentLang==='bn'?'সবুজ ✓':'GREEN ✓') : score < 65 ? (currentLang==='bn'?'হলুদ ⚠️':'YELLOW ⚠️') : (currentLang==='bn'?'লাল 🚫':'RED 🚫')}`, score > 65 ? 'err' : score > 30 ? 'warn' : 'info');
-  addLog(`[CHAIN] ${currentLang==='bn'?'ব্লক যোগ হচ্ছে #':'Adding block #'}${id} → ${shortHash(hash)}`, 'gold');
-
-  const tx = { id, donor: maskedName, phone: maskedPhone, amount, category, hash, prevHash, risk: score, date: dateStr, time: timeStr, timestamp: Date.now(), valid: true };
-
-  transactions.push(tx);
-  localStorage.setItem('aaTransactions', JSON.stringify(transactions.slice(-20)));
-
-  // Update UI
-  updateStats();
-  renderLedger();
-  updateRiskMeter(score, flags);
-  generateQR(tx);
-  updateBeneficiary(category);
-
-  // Show live hash
-  document.getElementById('liveHashBox').style.display = 'block';
-  document.getElementById('liveHashVal').textContent = hash;
-  document.getElementById('prevHashVal').textContent = prevHash === '0000000000000000000000000000000000000000000000000000000000000000' ? (currentLang==='bn'?'জেনেসিস ব্লক (প্রথম)':'Genesis Block (First)') : prevHash;
-
-  // PII vault update
-  document.getElementById('piiRawVal').textContent = `${currentLang==='bn'?'নাম':'Name'}: ${donor} | ${currentLang==='bn'?'ফোন':'Phone'}: ${phone}`;
-  document.getElementById('piiEncVal').textContent = fakeAES(donor + phone);
-  document.getElementById('encRecordCount').textContent = transactions.length;
-  document.getElementById('maskedFieldCount').textContent = transactions.length * 2;
-
-  // AI Report
-  setTimeout(() => { typeReport(generateReport(tx)); }, 600);
-
-  // High risk alert
-  if (score >= 65) {
-    setTimeout(() => {
-      showAlert(
-        currentLang==='bn' ? '🚫 উচ্চ ঝুঁকি ট্রানজ্যাকশন সনাক্ত!' : '🚫 High Risk Transaction Detected!',
-        currentLang==='bn'
-          ? `ট্রানজ্যাকশন ID: ASF-${id}\nপরিমাণ: ৳${amount.toLocaleString()}\nঝুঁকি স্কোর: ${score}/100\n\nএআই সিস্টেম এই ট্রানজ্যাকশনটি পর্যবেক্ষণে রেখেছে।\nম্যানুয়াল রিভিউ প্রয়োজন।`
-          : `Transaction ID: ASF-${id}\nAmount: ৳${amount.toLocaleString()}\nRisk Score: ${score}/100\n\nAI system has flagged this transaction for review.\nManual review required.`
-      );
-    }, 800);
-  }
-
-  addLog(`[DONE] ✓ ${currentLang==='bn'?'সফলভাবে সম্পন্ন':'Successfully completed'} — ASF-${id}`, 'info');
-
-  btn.textContent = currentLang==='bn' ? '✅ ডোনেশন সিমুলেট করুন' : '✅ Simulate Donation';
-  btn.disabled = false;
-}
-
-// ════════════════════════════════════════
-//  UPDATE STATS
-// ════════════════════════════════════════
-function updateStats() {
-  const total = transactions.reduce((a,t) => a+t.amount, 0);
-  document.getElementById('totalDonation').textContent = '৳' + total.toLocaleString();
-  document.getElementById('chainLength').textContent = transactions.length;
-
-  const allValid = transactions.every(t => t.valid);
-  const intEl = document.getElementById('integrityStatus');
-  if (allValid) {
-    intEl.textContent = '✓ INTACT';
-    intEl.style.color = 'var(--green-glow)';
-    intEl.style.fontSize = '18px';
-    document.getElementById('subIntegrity').textContent = currentLang==='bn' ? 'সমস্ত হ্যাশ বৈধ' : 'All hashes valid';
-  } else {
-    intEl.textContent = '✗ BREACHED';
-    intEl.style.color = 'var(--red-glow)';
-    intEl.style.fontSize = '18px';
-    document.getElementById('subIntegrity').textContent = currentLang==='bn' ? '⚠️ চেইন লঙ্ঘিত!' : '⚠️ Chain breached!';
-  }
-}
-
-// ════════════════════════════════════════
-//  RENDER LEDGER
-// ════════════════════════════════════════
-function renderLedger() {
-  const tbody = document.getElementById('ledgerBody');
-  if (transactions.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-ledger" id="emptyMsg">⛓️ ${currentLang==='bn'?'কোনো ট্রানজ্যাকশন নেই':'No transactions yet'}</div></td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = '';
-  [...transactions].reverse().forEach((tx, idx) => {
-    const riskClass = tx.risk < 30 ? 'risk-low' : tx.risk < 65 ? 'risk-mid' : 'risk-high';
-    const riskEmoji = tx.risk < 30 ? '🟢' : tx.risk < 65 ? '🟡' : '🔴';
-    const hashClass = tx.valid ? 'hash-short' : 'hash-short invalid';
-    const chainIcon = tx.valid ? '<span class="chain-valid">⛓️</span>' : '<span class="chain-broken">💔</span>';
-    const rowClass = tx.valid ? '' : 'tampered-row';
-
-    const row = document.createElement('tr');
-    row.className = rowClass;
-    if (idx === 0) row.classList.add('new-row');
-    row.innerHTML = `
-      <td style="font-family:var(--mono);color:var(--text-dim);">${transactions.length - idx}</td>
-      <td>
-        <div class="pii-masked">${tx.donor}</div>
-        <div style="font-size:9px;color:var(--text-dim);font-family:var(--mono);">${tx.phone}</div>
-      </td>
-      <td class="amount-cell" style="font-family:var(--mono);">৳${tx.amount.toLocaleString()}</td>
-      <td style="font-size:11px;color:var(--text-secondary);">${tx.category}</td>
-      <td><span class="risk-badge ${riskClass}">${riskEmoji} ${tx.risk}</span></td>
-      <td>
-        <div class="${hashClass}" style="position:relative;">
-          <span style="font-family:var(--mono);">${tx.valid ? shortHash(tx.hash) : '⚠️ INVALID'}</span>
-          <div class="tooltip">${tx.hash}</div>
-        </div>
-      </td>
-      <td>${chainIcon}</td>
-      <td style="font-family:var(--mono);font-size:10px;color:var(--text-dim);">${tx.time}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-// ════════════════════════════════════════
-//  TAMPER DEMO
-// ════════════════════════════════════════
-async function demonstrateTamper() {
-  if (transactions.length === 0) {
-    addLog(`[TAMPER] ${currentLang==='bn'?'আগে একটি ডোনেশন সিমুলেট করুন':'Simulate a donation first'}`, 'warn');
-    alert(currentLang==='bn' ? '⚠️ আগে একটি ডোনেশন সিমুলেট করুন!' : '⚠️ Please simulate a donation first!');
-    return;
-  }
-
-  const tx = transactions[transactions.length - 1];
-  const tamperedAmount = Math.floor(tx.amount * 0.2);
-
-  // Show comparison
-  document.getElementById('tamperComp').style.display = 'grid';
-
-  const orig = document.getElementById('originalData');
-  orig.innerHTML = `
-    <div class="data-row"><span class="data-key">ID:</span><span class="data-original">ASF-${tx.id}</span></div>
-    <div class="data-row"><span class="data-key">${currentLang==='bn'?'পরিমাণ:':'Amount:'}</span><span class="data-original">৳${tx.amount.toLocaleString()}</span></div>
-    <div class="data-row"><span class="data-key">Hash:</span><span class="data-original">${tx.hash.substring(0,12)}...</span></div>
-  `;
-
-  const tamp = document.getElementById('tamperedData');
-  tamp.innerHTML = `
-    <div class="data-row"><span class="data-key">ID:</span><span class="data-new">ASF-${tx.id}</span></div>
-    <div class="data-row"><span class="data-key">${currentLang==='bn'?'পরিমাণ:':'Amount:'}</span><span class="data-tampered">৳${tx.amount.toLocaleString()}</span> <span class="data-new">৳${tamperedAmount.toLocaleString()}</span></div>
-    <div class="data-row"><span class="data-key">Hash:</span><span class="data-new">⚠️ MISMATCH</span></div>
-  `;
-
-  // Compute what the new hash would be (different from original)
-  const tamperedRaw = `id:${tx.id}|donor:tampered|amount:${tamperedAmount}|cat:${tx.category}|time:tampered|prev:${tx.prevHash}`;
-  const newHash = await sha256(tamperedRaw);
-
-  addLog(`[TAMPER-DETECT] ${currentLang==='bn'?'ডাটা পরিবর্তনের চেষ্টা সনাক্ত!':'Data tampering attempt detected!'}`, 'err');
-  addLog(`[HASH-VERIFY] ${currentLang==='bn'?'পুরনো':'Old'}: ${shortHash(tx.hash)}`, 'warn');
-  addLog(`[HASH-VERIFY] ${currentLang==='bn'?'নতুন (মিলছে না)':'New (MISMATCH)'}: ${shortHash(newHash)}`, 'err');
-  addLog(`[CHAIN-BREAK] 🔗💔 ${currentLang==='bn'?'চেইন ভেঙে গেছে — অ্যালার্ম সক্রিয়!':'Chain broken — ALARM ACTIVE!'}`, 'err');
-
-  // Mark transaction as tampered
-  transactions[transactions.length - 1].valid = false;
-  localStorage.setItem('aaTransactions', JSON.stringify(transactions.slice(-20)));
-  isTampered = true;
-
-  // Show alert
-  const alertDetail = currentLang==='bn'
-    ? `মূল হ্যাশ: ${tx.hash.substring(0,20)}...\nবর্তমান হ্যাশ: ${newHash.substring(0,20)}...\n\n❌ হ্যাশ মিলছে না — ডাটা পরিবর্তন প্রমাণিত!\n\nট্রানজ্যাকশন ID: ASF-${tx.id}\nসন্দেহজনক পরিবর্তন: ৳${tx.amount.toLocaleString()} → ৳${tamperedAmount.toLocaleString()}`
-    : `Original Hash: ${tx.hash.substring(0,20)}...\nCurrent Hash: ${newHash.substring(0,20)}...\n\n❌ Hash mismatch — tampering proven!\n\nTransaction ID: ASF-${tx.id}\nSuspected change: ৳${tx.amount.toLocaleString()} → ৳${tamperedAmount.toLocaleString()}`;
-
-  document.getElementById('tamperAlertDetail').textContent = alertDetail;
-  document.getElementById('tamperAlert').classList.add('visible');
-  document.getElementById('btnRestore').style.display = 'block';
-
-  updateStats();
-  renderLedger();
-
-  setTimeout(() => {
-    showAlert(
-      currentLang==='bn' ? '🚨 চেইন ভেঙে গেছে! অখণ্ডতা লঙ্ঘন!' : '🚨 CHAIN BROKEN! Integrity Violation!',
-      alertDetail
-    );
-  }, 500);
-}
-
-function restoreChain() {
-  transactions.forEach(t => t.valid = true);
-  localStorage.setItem('aaTransactions', JSON.stringify(transactions.slice(-20)));
-  isTampered = false;
-  document.getElementById('tamperAlert').classList.remove('visible');
-  document.getElementById('tamperComp').style.display = 'none';
-  document.getElementById('btnRestore').style.display = 'none';
-  updateStats();
-  renderLedger();
-  addLog(`[RESTORE] ✓ ${currentLang==='bn'?'চেইন পুনরুদ্ধার সম্পন্ন':'Chain successfully restored'}`, 'gold');
-}
-
-// ════════════════════════════════════════
-//  ZAKAT CALCULATOR
-// ════════════════════════════════════════
-function calculateZakat() {
-  const gold = parseFloat(document.getElementById('zakatGold').value) || 0;
-  const savings = parseFloat(document.getElementById('zakatSavings').value) || 0;
-  const biz = parseFloat(document.getElementById('zakatBiz').value) || 0;
-
-  // Nisab: ~85g gold at ~8000 BDT/gram
-  const goldValueBDT = gold * 8000;
-  const totalWealth = goldValueBDT + savings + biz;
-  const nisab = 680000; // BDT
-
-  const resultDiv = document.getElementById('zakatResult');
-
-  if (totalWealth < nisab) {
-    resultDiv.style.display = 'block';
-    resultDiv.classList.add('visible');
-    document.getElementById('zakatAmount').textContent = currentLang==='bn' ? 'যাকাত প্রযোজ্য নয়' : 'Zakat Not Applicable';
-    document.getElementById('zakatAmount').style.fontSize = '14px';
-    document.getElementById('zakatBreakdown').innerHTML = `<div style="font-size:11px;color:var(--text-secondary);">${currentLang==='bn'?`মোট সম্পদ ৳${totalWealth.toLocaleString()} নিসাব (৳${nisab.toLocaleString()})-এর নিচে।`:`Total wealth ৳${totalWealth.toLocaleString()} is below nisab (৳${nisab.toLocaleString()}).`}</div>`;
-    return;
-  }
-
-  const zakatDue = totalWealth * 0.025;
-  document.getElementById('zakatAmount').textContent = '৳' + Math.round(zakatDue).toLocaleString();
-  document.getElementById('zakatAmount').style.fontSize = '22px';
-
-  const routing = [
-    { cat: currentLang==='bn'?'ফকির/মিসকিন (৪০%)':'Poor & Needy (40%)', pct: 40, amt: zakatDue * 0.4 },
-    { cat: currentLang==='bn'?'এতিম শিশু (২৫%)':'Orphaned Children (25%)', pct: 25, amt: zakatDue * 0.25 },
-    { cat: currentLang==='bn'?'শিক্ষা খাত (২০%)':'Education (20%)', pct: 20, amt: zakatDue * 0.2 },
-    { cat: currentLang==='bn'?'পানি প্রকল্প (১৫%)':'Water Project (15%)', pct: 15, amt: zakatDue * 0.15 },
-  ];
-
-  let html = '';
-  routing.forEach(r => {
-    html += `<div class="zakat-row"><span class="zakat-cat">${r.cat}</span><span class="zakat-pct">৳${Math.round(r.amt).toLocaleString()}</span></div>`;
-  });
-  document.getElementById('zakatBreakdown').innerHTML = html;
-  resultDiv.style.display = 'block';
-  resultDiv.classList.add('visible');
-
-  addLog(`[ZAKAT-AI] ${currentLang==='bn'?'যাকাত হিসাব সম্পন্ন':'Zakat calculated'}: ৳${Math.round(zakatDue).toLocaleString()}`, 'gold');
-}
-
-// ════════════════════════════════════════
-//  ALERT MODAL
-// ════════════════════════════════════════
-function showAlert(title, body) {
-  document.getElementById('alertTitle').textContent = title;
-  document.getElementById('alertBody').textContent = body;
-  document.getElementById('alertOverlay').classList.add('active');
-}
-
-function closeAlert() {
-  document.getElementById('alertOverlay').classList.remove('active');
-}
-
-// ════════════════════════════════════════
-//  GROQ API
-// ════════════════════════════════════════
-const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
-
-let groqKey = localStorage.getItem('aaGroqKey') || '';
-let groqConnected = false;
-
-function openSettings() {
-  document.getElementById('settingsOverlay').classList.add('active');
-  if (groqKey) {
-    document.getElementById('groqKeyInput').value = groqKey;
-    updateGroqStatus(true);
-  }
-}
-
-function closeSettings() {
-  document.getElementById('settingsOverlay').classList.remove('active');
-}
-
-function saveGroqKey() {
-  const key = document.getElementById('groqKeyInput').value.trim();
-  if (!key.startsWith('gsk_')) {
-    alert(currentLang === 'bn'
-      ? '❌ সঠিক Groq API Key দিন। এটি "gsk_" দিয়ে শুরু হয়।'
-      : '❌ Please enter a valid Groq API Key starting with "gsk_"');
-    return;
-  }
-  groqKey = key;
-  localStorage.setItem('aaGroqKey', key);
-  updateGroqStatus(true);
-  addLog('[GROQ] API Key সংরক্ষিত হয়েছে ✓', 'gold');
-}
-
-function updateGroqStatus(connected) {
-  groqConnected = connected;
-  const dot = document.getElementById('groqDot');
-  const statusText = document.getElementById('groqStatusText');
-  const btn = document.getElementById('groqStatusBtn');
-  const btnLabel = document.getElementById('groqBtnLabel');
-  const btnIcon = document.getElementById('groqBtnIcon');
-  const badge = document.getElementById('groqModelBadge');
-
-  if (connected) {
-    dot.className = 'groq-dot connected';
-    statusText.textContent = '✓ Groq সংযুক্ত — llama-3.3-70b-versatile';
-    statusText.style.color = 'var(--green-glow)';
-    btn.classList.add('groq-active');
-    btnLabel.textContent = '⚡ Groq সক্রিয়';
-    btnIcon.textContent = '✓';
-    badge.textContent = '⚡ Groq: llama-3.3-70b';
-    badge.style.color = 'var(--green-glow)';
-    badge.style.borderColor = 'rgba(46,125,50,0.5)';
-    badge.style.background = 'rgba(46,125,50,0.15)';
-
-    // Show welcome in chat
-    appendChatMsg('ai', currentLang === 'bn'
-      ? 'Groq AI সফলভাবে সংযুক্ত হয়েছে! ⚡ এখন আমি রিয়েল-টাইম বিশ্লেষণ করতে পারব। ট্রানজ্যাকশন সিমুলেট করুন বা উপরের বাটনগুলো ব্যবহার করুন।'
-      : 'Groq AI connected successfully! ⚡ I can now provide real-time analysis. Simulate a transaction or use the quick prompts above.');
-  } else {
-    dot.className = 'groq-dot disconnected';
-    statusText.textContent = 'সংযুক্ত নয়';
-    statusText.style.color = 'var(--text-muted)';
-    btn.classList.remove('groq-active');
-    btnLabel.textContent = 'Groq সংযোগ করুন';
-    btnIcon.textContent = '⚡';
-    badge.textContent = '⚡ Groq সংযুক্ত নয়';
-  }
-}
-
-async function testGroqConnection() {
-  const key = document.getElementById('groqKeyInput').value.trim();
-  if (!key) { alert('API Key দিন'); return; }
-
-  const statusText = document.getElementById('groqStatusText');
-  statusText.textContent = '⏳ পরীক্ষা চলছে...';
-  statusText.style.color = 'var(--amber)';
-
-  try {
-    const res = await fetch(GROQ_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        max_tokens: 30,
-        messages: [{ role: 'user', content: 'Reply with only: CONNECTED' }]
-      })
-    });
-
-    if (res.ok) {
-      groqKey = key;
-      localStorage.setItem('aaGroqKey', key);
-      updateGroqStatus(true);
-      addLog('[GROQ] ✓ সংযোগ সফল — llama-3.3-70b-versatile', 'gold');
-    } else {
-      const err = await res.json();
-      statusText.textContent = '❌ ব্যর্থ: ' + (err.error?.message || 'Invalid key');
-      statusText.style.color = 'var(--red-glow)';
-      addLog(`[GROQ] ❌ সংযোগ ব্যর্থ: ${err.error?.message}`, 'err');
-    }
-  } catch (e) {
-    statusText.textContent = '❌ নেটওয়ার্ক ত্রুটি';
-    statusText.style.color = 'var(--red-glow)';
-    addLog('[GROQ] ❌ নেটওয়ার্ক ত্রুটি — API পৌঁছানো যাচ্ছে না', 'err');
-  }
-}
-
-async function callGroq(messages, maxTokens = 400) {
-  if (!groqKey) return null;
-  try {
-    const res = await fetch(GROQ_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${groqKey}`
-      },
-      body: JSON.stringify({ model: GROQ_MODEL, max_tokens: maxTokens, messages })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      if (err.error?.code === 'invalid_api_key') {
-        groqConnected = false;
-        updateGroqStatus(false);
-      }
-      return null;
-    }
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || null;
-  } catch (e) {
-    return null;
-  }
-}
-
-// ════════════════════════════════════════
-//  GROQ: TRANSPARENCY REPORT (replaces mock)
-// ════════════════════════════════════════
-async function generateGroqReport(tx) {
-  if (!groqConnected || !groqKey) {
-    typeReport(generateReport(tx));
-    return;
-  }
-
-  const systemPrompt = `তুমি আস-সুন্নাহ ফাউন্ডেশনের আল-আমানাহ এআই গার্ড সিস্টেম। তোমার কাজ প্রতিটি দানের পর দাতাকে একটি সংক্ষিপ্ত, আন্তরিক স্বচ্ছতা বার্তা পাঠানো যাতে ইসলামিক ভাষা (জাযাকাল্লাহু খাইরান, আমানত) ব্যবহার থাকে। সর্বোচ্চ ৫-৬ লাইনে উত্তর দাও। কোনো মার্কডাউন বা বুলেট পয়েন্ট নয়।`;
-
-  const userPrompt = `একজন দাতা ${tx.amount} টাকা "${tx.category}" খাতে দান করেছেন। ডিজিটাল সিল: ${tx.hash.substring(0, 16)}... ঝুঁকি স্কোর: ${tx.risk}/100। ${currentLang === 'en' ? 'Reply in English.' : 'বাংলায় উত্তর দাও।'}`;
-
-  const box = document.getElementById('reportBox');
-  box.innerHTML = '<span style="color:var(--gold);font-family:var(--mono);font-size:11px;">⚡ Groq AI লিখছে...</span>';
-
-  addLog('[GROQ-REPORT] স্বচ্ছতা রিপোর্ট তৈরি হচ্ছে...', 'gold');
-
-  const reply = await callGroq([
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: userPrompt }
-  ], 300);
-
-  if (reply) {
-    typeReport(reply);
-    addLog('[GROQ-REPORT] ✓ রিয়েল AI রিপোর্ট তৈরি সম্পন্ন', 'gold');
-  } else {
-    typeReport(generateReport(tx));
-    addLog('[GROQ-REPORT] Fallback to local report', 'warn');
-  }
-}
-
-// ════════════════════════════════════════
-//  GROQ: ANOMALY ANALYSIS
-// ════════════════════════════════════════
-async function runAnomalyAnalysis() {
-  if (!groqConnected || !groqKey) {
-    document.getElementById('anomalyAnalysisBox').innerHTML =
-      `<span style="color:var(--amber);font-size:12px;font-family:var(--mono);">⚡ Groq API সংযুক্ত করুন — হেডারের "Groq সংযোগ করুন" বাটনে ক্লিক করুন।</span>`;
-    return;
-  }
-
-  if (transactions.length === 0) {
-    document.getElementById('anomalyAnalysisBox').innerHTML =
-      `<span style="color:var(--text-dim);font-size:11px;font-family:var(--mono);">আগে কিছু ট্রানজ্যাকশন সিমুলেট করুন।</span>`;
-    return;
-  }
-
-  const box = document.getElementById('anomalyAnalysisBox');
-  box.innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;color:var(--gold);font-family:var(--mono);font-size:11px;">
-      <div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
-      Groq AI বিশ্লেষণ চলছে...
+function showBenef(cat){
+  const b=BEN[cat]||BEN['এতিমখানা'];const bn=lang==='bn';
+  const now=new Date().toLocaleDateString(bn?'bn-BD':'en-GB');
+  document.getElementById('benef').innerHTML=`
+    <div style="background:rgba(46,125,50,.08);border:1px solid rgba(46,125,50,.3);border-radius:7px;padding:11px;font-size:10px;">
+      <div style="font-size:14px;text-align:center;margin-bottom:7px;">📍</div>
+      <div class="qrr"><span class="qrk">${bn?'প্রকল্প:':'Project:'}</span><span style="color:var(--t1);font-weight:600;">${bn?b.n_bn:b.n_en}</span></div>
+      <div class="qrr"><span class="qrk">${bn?'অফিসার:':'Officer:'}</span><span class="qrv">${b.o}</span></div>
+      <div class="qrr"><span class="qrk">${bn?'অবস্থা:':'Status:'}</span><span style="color:var(--g3);">✓ ${bn?b.s_bn:b.s_en}</span></div>
+      <div class="qrr" style="border-bottom:none"><span class="qrk">${bn?'তারিখ:':'Date:'}</span><span style="font-family:var(--mono);">${now}</span></div>
+      <div style="margin-top:7px;padding:5px 7px;background:rgba(46,125,50,.1);border-radius:4px;text-align:center;color:var(--g3);font-family:var(--mono);font-size:8px;">🔗 ${bn?'ব্লকচেইন যাচাইকৃত — অপরিবর্তনীয়':'Blockchain Verified — Immutable'}</div>
     </div>`;
+}
 
-  const txSummary = transactions.slice(-8).map((t, i) =>
-    `#${i+1}: Amount=${t.amount} BDT, Category=${t.category}, Risk=${t.risk}/100, Valid=${t.valid}`
-  ).join('\n');
+// ═══ STATS ═══
+function updateStats(){
+  const tot=txns.reduce((a,t)=>a+t.amt,0);
+  document.getElementById('totalDon').textContent='৳'+tot.toLocaleString();
+  document.getElementById('chainLen').textContent=txns.length;
+  const ok=txns.every(t=>!t.bad);
+  const bn=lang==='bn';
+  document.getElementById('integrity').textContent=ok?'✓ INTACT':'✗ BREACHED';
+  document.getElementById('integrity').style.color=ok?'var(--g3)':'var(--redG)';
+  document.getElementById('subIN').textContent=ok?(bn?'সমস্ত হ্যাশ বৈধ':'All hashes valid'):(bn?'⚠️ চেইন লঙ্ঘিত!':'⚠️ Chain breached!');
+  document.getElementById('encR').textContent=txns.length;
+  document.getElementById('maskF').textContent=txns.length*2;
+}
 
-  const systemPrompt = `তুমি একজন ব্যাংকিং সিকিউরিটি বিশেষজ্ঞ। তুমি আস-সুন্নাহ ফাউন্ডেশনের ট্রানজ্যাকশন ডাটা বিশ্লেষণ করবে। সংক্ষিপ্ত, কার্যকর পরামর্শ দাও। ৬-৮ লাইনে সীমাবদ্ধ থাকো। কোনো মার্কডাউন নয়।`;
+// ═══ LEDGER ═══
+function renderLedger(){
+  const tbody=document.getElementById('ledger');
+  if(!txns.length){tbody.innerHTML=`<tr><td colspan="8"><div class="empt">${TR[lang].emptyMsg}</div></td></tr>`;return;}
+  tbody.innerHTML='';
+  [...txns].reverse().forEach((tx,i)=>{
+    const rc=tx.risk<30?'rl':tx.risk<65?'rm':'rh';
+    const re=tx.risk<30?'🟢':tx.risk<65?'🟡':'🔴';
+    const tr=document.createElement('tr');
+    if(tx.bad)tr.className='tbad';
+    if(i===0)tr.classList.add('nrow');
+    tr.innerHTML=`<td style="font-family:var(--mono);color:var(--t4);">${txns.length-i}</td>
+      <td><div class="piim">${tx.donor}</div><div style="font-size:8px;color:var(--t4);font-family:var(--mono);">${tx.phone}</div></td>
+      <td style="font-family:var(--mono);font-weight:600;">৳${tx.amt.toLocaleString()}</td>
+      <td style="font-size:10px;">${tx.cat}</td>
+      <td><span class="rbdg ${rc}">${re} ${tx.risk}</span></td>
+      <td><div class="hs2${tx.bad?' inv':''}" style="position:relative;">${tx.bad?'⚠️ INVALID':sh(tx.hash)}<div class="tip">${tx.hash}</div></div></td>
+      <td><span style="color:${tx.bad?'var(--redG)':'var(--g3)'};">${tx.bad?'💔':'⛓️'}</span></td>
+      <td style="font-family:var(--mono);font-size:9px;color:var(--t4);">${tx.time}</td>`;
+    tbody.appendChild(tr);
+  });
+}
 
-  const userPrompt = `নিচের ট্রানজ্যাকশনগুলো বিশ্লেষণ করো এবং সন্দেহজনক প্যাটার্ন, ঝুঁকি, এবং সুপারিশ জানাও:\n\n${txSummary}\n\n${currentLang === 'en' ? 'Reply in English.' : 'বাংলায় উত্তর দাও।'}`;
+// ═══ SIMULATE DONATION ═══
+async function simDonate(){
+  const donor=document.getElementById('iDonor').value.trim()||(lang==='bn'?'বেনামী দাতা':'Anonymous');
+  const phone=document.getElementById('iPhone').value.trim()||'01700000000';
+  const amt=parseFloat(document.getElementById('iAmount').value)||Math.floor(Math.random()*9000+1000);
+  const cat=document.getElementById('iCat').value;
+  const btn=document.getElementById('btnSim');
+  btn.textContent=lang==='bn'?'⏳ প্রক্রিয়া হচ্ছে...':'⏳ Processing...';
+  btn.disabled=true;
 
-  addLog('[GROQ-ANALYSIS] ট্রানজ্যাকশন বিশ্লেষণ পাঠানো হচ্ছে...', 'gold');
+  const now=new Date();
+  const id=String(Date.now()).slice(-6);
+  const prev=txns.length?txns[txns.length-1].hash:'0'.repeat(64);
 
-  const reply = await callGroq([
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: userPrompt }
-  ], 500);
+  addLog(`[INTAKE] ${lang==='bn'?'নতুন ডোনেশন':'New donation'} — ৳${amt}`,'li2');
+  addLog(`[PII] AES-256 ${lang==='bn'?'এনক্রিপশন':'encryption'} active`,'lgo');
+  const raw=`id:${id}|donor:${donor}|amt:${amt}|cat:${cat}|ts:${now.toISOString()}|prev:${prev}`;
+  addLog(`[SHA-256] ${lang==='bn'?'হ্যাশিং':'Hashing'}...`,'li2');
+  const hash=await sha256(raw);
 
-  if (reply) {
-    box.innerHTML = `
-      <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-family:var(--mono);margin-bottom:8px;">⚡ Groq AI বিশ্লেষণ</div>
-      <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;font-family:var(--arabic);">${reply.replace(/\n/g, '<br>')}</div>`;
-    addLog('[GROQ-ANALYSIS] ✓ বিশ্লেষণ সম্পন্ন', 'gold');
-  } else {
-    box.innerHTML = `<span style="color:var(--red-glow);font-size:11px;font-family:var(--mono);">❌ Groq API থেকে রেসপন্স পাওয়া যায়নি। API Key যাচাই করুন।</span>`;
+  const recent=txns.filter(t=>Date.now()-t.ts<180000).length;
+  const{s:risk,flags}=calcRisk(amt,recent+1);
+  addLog(`[RISK] Score: ${risk}/100 — ${risk<30?'🟢 LOW':risk<65?'🟡 MED':'🔴 HIGH'}`,risk>65?'le':risk>30?'lw':'li2');
+  addLog(`[CHAIN] Block #${id} → ${sh(hash)}`,'lgo');
+
+  const tx={id,donor:maskN(donor),phone:maskP(phone),amt,cat,hash,prev,risk,date:now.toLocaleDateString(),time:now.toLocaleTimeString('en-GB'),ts:Date.now(),bad:false};
+  txns.push(tx);
+  localStorage.setItem('aa_txns',JSON.stringify(txns.slice(-25)));
+
+  updateStats();renderLedger();showRisk(risk,flags);makeQR(tx);showBenef(cat);animJourney(hash,risk,cat);
+  document.getElementById('liveHash').style.display='block';
+  document.getElementById('liveHashV').textContent=hash;
+  document.getElementById('prevHashV').textContent=prev==='0'.repeat(64)?(lang==='bn'?'জেনেসিস ব্লক':'Genesis Block'):prev;
+  document.getElementById('piiRawV').textContent=`${lang==='bn'?'নাম':'Name'}: ${donor} | ${lang==='bn'?'ফোন':'Phone'}: ${phone}`;
+  document.getElementById('piiEncV').textContent=fakeAES();
+
+  setTimeout(()=>typeRep(genReport(tx)),700);
+  if(risk>=65)setTimeout(()=>showAlert(lang==='bn'?'🚫 উচ্চ ঝুঁকি!':'🚫 High Risk!',lang==='bn'?`ASF-${id}\nপরিমাণ: ৳${amt.toLocaleString()}\nঝুঁকি: ${risk}/100\nএআই পর্যবেক্ষণে রেখেছে।`:`ASF-${id}\nAmount: ৳${amt.toLocaleString()}\nRisk: ${risk}/100\nAI flagged for review.`),800);
+  addLog(`[DONE] ✓ ASF-${id}`,'lgo');
+  btn.textContent=TR[lang].btnSim;btn.disabled=false;
+}
+
+// ═══ DEMO DATA ═══
+async function loadDemoData(){
+  const btn=document.getElementById('btnDemo');btn.textContent='⏳...';btn.disabled=true;
+  const demos=[
+    {n:'আব্দুল্লাহ আহমেদ',p:'01712345678',a:5000,c:'এতিমখানা'},
+    {n:'রাহেলা বেগম',p:'01898765432',a:1000,c:'নলকূপ'},
+    {n:'মোহাম্মদ হাসান',p:'01534567890',a:10000,c:'শিক্ষা'},
+    {n:'ফাতেমা খাতুন',p:'01923456789',a:500,c:'বিধবা'},
+    {n:'ইব্রাহিম খলিল',p:'01756789012',a:25000,c:'কুরবানী'},
+  ];
+  addLog('[DEMO] ডেমো ডাটা লোড হচ্ছে — 5টি ট্রানজ্যাকশন','lgo');
+  for(const d of demos){
+    await new Promise(r=>setTimeout(r,280));
+    const id=String(Date.now()).slice(-6);
+    const prev=txns.length?txns[txns.length-1].hash:'0'.repeat(64);
+    const hash=await sha256(`id:${id}|${d.n}|${d.a}|${d.c}|${new Date().toISOString()}|${prev}`);
+    const{s:risk,flags}=calcRisk(d.a,txns.length);
+    const tx={id,donor:maskN(d.n),phone:maskP(d.p),amt:d.a,cat:d.c,hash,prev,risk,date:new Date().toLocaleDateString(),time:new Date().toLocaleTimeString('en-GB'),ts:Date.now(),bad:false};
+    txns.push(tx);
+    if(risk>=65){threats++;localStorage.setItem('aa_threats',threats);}
+    addLog(`[DEMO] ✓ ASF-${id} — ৳${d.a} — ${d.c}`,'li2');
   }
+  localStorage.setItem('aa_txns',JSON.stringify(txns.slice(-25)));
+  updateStats();renderLedger();
+  const lt=txns[txns.length-1];
+  const{s,flags}=calcRisk(lt.amt,3);
+  showRisk(s,flags);makeQR(lt);showBenef(lt.cat);animJourney(lt.hash,lt.risk,lt.cat);
+  document.getElementById('piiEncV').textContent=fakeAES();
+  document.getElementById('threatsCnt').textContent=threats;
+  setTimeout(()=>typeRep(genReport(lt)),500);
+  addLog('[DEMO] ✓ সমস্ত ডেমো ডাটা লোড সম্পন্ন','lgo');
+  btn.textContent='⚡ Demo Data';btn.disabled=false;
 }
 
-// ════════════════════════════════════════
-//  GROQ: CHAT
-// ════════════════════════════════════════
-const quickPromptsData = {
-  bn: [
-    'এই ট্রানজ্যাকশনগুলো বিশ্লেষণ করো এবং কোনো সন্দেহজনক প্যাটার্ন থাকলে বলো।',
-    'আজকের সমস্ত ট্রানজ্যাকশনের ঝুঁকি সারাংশ দাও।',
-    'একটি পূর্ণাঙ্গ স্বচ্ছতা রিপোর্ট তৈরি করো যা দাতাদের দেখানো যাবে।',
-    'PII Vault এবং AES-256 এনক্রিপশন সম্পর্কে সহজ ভাষায় ব্যাখ্যা করো।',
-  ],
-  en: [
-    'Analyze these transactions and identify any suspicious patterns.',
-    'Give a risk summary for all transactions today.',
-    'Generate a full transparency report for donors.',
-    'Explain PII Vault and AES-256 encryption in simple terms.',
-  ]
-};
+// ═══ TAMPER ═══
+async function doTamper(){
+  if(!txns.length){alert(lang==='bn'?'⚠️ আগে ডোনেশন করুন বা Demo ক্লিক করুন!':'⚠️ Simulate a donation or click Demo first!');return;}
+  const tx=txns[txns.length-1];const tAmt=Math.floor(tx.amt*.2);
+  document.getElementById('tcomp').style.display='grid';
+  document.getElementById('origD').innerHTML=`<div class="dr"><span class="dk">ID:</span><span class="do">ASF-${tx.id}</span></div><div class="dr"><span class="dk">৳:</span><span class="do">${tx.amt.toLocaleString()}</span></div><div class="dr"><span class="dk">Hash:</span><span class="do">${tx.hash.slice(0,10)}...</span></div>`;
+  document.getElementById('tampD').innerHTML=`<div class="dr"><span class="dk">ID:</span><span class="dn">ASF-${tx.id}</span></div><div class="dr"><span class="dk">৳:</span><span class="dtd">${tx.amt.toLocaleString()}</span><span class="dn"> ${tAmt.toLocaleString()}</span></div><div class="dr"><span class="dk">Hash:</span><span class="dn">⚠️ MISMATCH</span></div>`;
+  const fh=await sha256(`tampered:${tAmt}:${Math.random()}`);
+  addLog('[TAMPER] 🚨 ডাটা পরিবর্তনের চেষ্টা সনাক্ত!','le');
+  addLog(`[HASH] Old:${sh(tx.hash)} New:${sh(fh)}`,'le');
+  addLog('[CHAIN] 💔 চেইন ভেঙে গেছে! অ্যালার্ম!','le');
+  txns[txns.length-1].bad=true;localStorage.setItem('aa_txns',JSON.stringify(txns.slice(-25)));
+  const det=lang==='bn'?`মূল: ${tx.hash.slice(0,20)}...\nবর্তমান: ${fh.slice(0,20)}...\n\n❌ হ্যাশ মিলছে না!\nASF-${tx.id}: ৳${tx.amt} → ৳${tAmt}`:`Original: ${tx.hash.slice(0,20)}...\nModified: ${fh.slice(0,20)}...\n\n❌ Hash mismatch!\nASF-${tx.id}: ৳${tx.amt} → ৳${tAmt}`;
+  document.getElementById('tAlertD').textContent=det;document.getElementById('tAlert').classList.add('vis');document.getElementById('btnRest').style.display='block';
+  updateStats();renderLedger();
+  setTimeout(()=>showAlert(lang==='bn'?'🚨 চেইন ভেঙে গেছে!':'🚨 CHAIN BROKEN!',det),400);
+}
 
-let chatHistory = [];
+function restoreChain(){
+  txns.forEach(t=>t.bad=false);localStorage.setItem('aa_txns',JSON.stringify(txns.slice(-25)));
+  document.getElementById('tAlert').classList.remove('vis');document.getElementById('tcomp').style.display='none';document.getElementById('btnRest').style.display='none';
+  updateStats();renderLedger();addLog('[RESTORE] ✓ চেইন পুনরুদ্ধার সম্পন্ন','lgo');
+}
 
-function appendChatMsg(role, text) {
-  const box = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = `chat-msg ${role} fade-in`;
-  if (role === 'ai') {
-    div.innerHTML = `<div class="msg-label">আল-আমানাহ এআই ⚡ Groq</div>${text.replace(/\n/g, '<br>')}`;
-  } else {
-    div.textContent = text;
+// ═══ ZAKAT ═══
+function calcZakat(){
+  const g=parseFloat(document.getElementById('zGold').value)||0;
+  const s=parseFloat(document.getElementById('zSav').value)||0;
+  const b=parseFloat(document.getElementById('zBiz').value)||0;
+  const tot=(g*8000)+s+b,nisab=680000;const bn=lang==='bn';
+  const res=document.getElementById('zkRes');
+  if(tot<nisab){document.getElementById('zkAmt').textContent=bn?'যাকাত প্রযোজ্য নয়':'Not Applicable';document.getElementById('zkAmt').style.fontSize='13px';document.getElementById('zkBreak').innerHTML=`<div style="font-size:10px;color:var(--t2);">${bn?`মোট ৳${tot.toLocaleString()} নিসাবের নিচে।`:`Total ৳${tot.toLocaleString()} below nisab.`}</div>`;}
+  else{
+    const due=tot*0.025;document.getElementById('zkAmt').textContent='৳'+Math.round(due).toLocaleString();document.getElementById('zkAmt').style.fontSize='18px';
+    const cats_bn=[['ফকির/মিসকিন (৪০%)',40],['এতিম শিশু (২৫%)',25],['শিক্ষা (২০%)',20],['পানি প্রকল্প (১৫%)',15]];
+    const cats_en=[['Poor & Needy (40%)',40],['Orphans (25%)',25],['Education (20%)',20],['Water Project (15%)',15]];
+    document.getElementById('zkBreak').innerHTML=(bn?cats_bn:cats_en).map(([l,p])=>`<div class="zkrow"><span class="zkc">${l}</span><span class="zkp">৳${Math.round(due*p/100).toLocaleString()}</span></div>`).join('');
+    addLog(`[ZAKAT] হিসাব: ৳${Math.round(due).toLocaleString()}`,'lgo');
   }
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
+  res.style.display='block';res.classList.add('vis');
 }
 
-function showTypingIndicator() {
-  const box = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = 'chat-msg ai typing';
-  div.id = 'typingIndicator';
-  div.innerHTML = `<div class="msg-label">আল-আমানাহ এআই</div><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-}
+// ═══ ALERT ═══
+function showAlert(t,b){document.getElementById('atit').textContent=t;document.getElementById('abod').textContent=b;document.getElementById('aov').classList.add('on');}
+function closeAlert(){document.getElementById('aov').classList.remove('on');}
 
-function removeTypingIndicator() {
-  const el = document.getElementById('typingIndicator');
-  if (el) el.remove();
-}
-
-async function sendChatMessage() {
-  const input = document.getElementById('chatInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  input.value = '';
-  appendChatMsg('user', msg);
-
-  if (!groqConnected || !groqKey) {
-    appendChatMsg('ai', currentLang === 'bn'
-      ? '⚡ Groq API সংযুক্ত নেই। হেডারের "Groq সংযোগ করুন" বাটনে ক্লিক করুন এবং আপনার API Key দিন।'
-      : '⚡ Groq API not connected. Click "Connect Groq" in the header and enter your API key.');
-    return;
-  }
-
-  showTypingIndicator();
-  document.getElementById('chatSendBtn').disabled = true;
-
-  // Build context from transactions
-  const txContext = transactions.length > 0
-    ? `বর্তমান ট্রানজ্যাকশন সংখ্যা: ${transactions.length}। মোট: ৳${transactions.reduce((a,t)=>a+t.amount,0).toLocaleString()}। সর্বশেষ ঝুঁকি স্কোর: ${transactions[transactions.length-1]?.risk || 'N/A'}/100।`
-    : 'এখনো কোনো ট্রানজ্যাকশন নেই।';
-
-  const systemPrompt = `তুমি আল-আমানাহ এআই গার্ড — আস-সুন্নাহ ফাউন্ডেশনের জন্য একটি ব্যাংকিং-গ্রেড সিকিউরিটি সিস্টেম। তোমার দায়িত্ব দান ব্যবস্থাপনা, ফ্রড ডিটেকশন, এবং আর্থিক স্বচ্ছতা নিশ্চিত করা। তুমি সংক্ষিপ্ত, পেশাদার এবং ইসলামিক মূল্যবোধ সম্পন্ন উত্তর দাও। বর্তমান ডাটা: ${txContext} ${currentLang === 'en' ? 'Reply in English.' : 'বাংলায় উত্তর দাও।'}`;
-
-  chatHistory.push({ role: 'user', content: msg });
-
-  const reply = await callGroq([
-    { role: 'system', content: systemPrompt },
-    ...chatHistory.slice(-6) // last 6 turns for context
-  ], 450);
-
-  removeTypingIndicator();
-  document.getElementById('chatSendBtn').disabled = false;
-
-  if (reply) {
-    chatHistory.push({ role: 'assistant', content: reply });
-    appendChatMsg('ai', reply);
-    addLog(`[GROQ-CHAT] ✓ উত্তর পাওয়া গেছে (${reply.length} chars)`, 'gold');
-  } else {
-    appendChatMsg('ai', currentLang === 'bn'
-      ? '❌ Groq API থেকে উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।'
-      : '❌ No response from Groq API. Please try again.');
-  }
-}
-
-function sendQuickPrompt(idx) {
-  const prompts = currentLang === 'bn' ? quickPromptsData.bn : quickPromptsData.en;
-  document.getElementById('chatInput').value = prompts[idx];
-  sendChatMessage();
-}
-
-// ════════════════════════════════════════
-//  PATCH simulateDonation to use Groq
-// ════════════════════════════════════════
-const _originalSimulate = simulateDonation;
-window.simulateDonation = async function() {
-  await _originalSimulate();
-  if (groqConnected && transactions.length > 0) {
-    const tx = transactions[transactions.length - 1];
-    setTimeout(() => generateGroqReport(tx), 300);
-    setTimeout(() => runAnomalyAnalysis(), 1500);
-  }
-};
-
-// ════════════════════════════════════════
-//  INIT GROQ on page load
-// ════════════════════════════════════════
-if (groqKey && groqKey.startsWith('gsk_')) {
-  groqConnected = true;
-  updateGroqStatus(true);
-  addLog('[GROQ] ✓ সংরক্ষিত API Key লোড হয়েছে', 'gold');
-}
-
-function init() {
-  // Boot logs
-  addLog('[BOOT] Al-Amanah AI Guard v2.1 — Starting...', 'info');
-  setTimeout(() => addLog('[MODULE] SHA-256 Hash Engine → LOADED', 'info'), 300);
-  setTimeout(() => addLog('[MODULE] AES-256 PII Vault → LOADED', 'gold'), 600);
-  setTimeout(() => addLog('[MODULE] AI Risk Scoring Engine → LOADED', 'info'), 900);
-  setTimeout(() => addLog('[MODULE] QR Transparency Generator → LOADED', 'info'), 1200);
-  setTimeout(() => addLog('[SYSTEM] ✓ All modules operational. Awaiting transactions.', 'gold'), 1600);
-
-  // Restore from localStorage
-  if (transactions.length > 0) {
-    updateStats();
-    renderLedger();
-    addLog(`[RESTORE] ${transactions.length} ${currentLang==='bn'?'পুরনো ট্রানজ্যাকশন লোড হয়েছে':'previous transactions loaded'}`, 'gold');
-    document.getElementById('encRecordCount').textContent = transactions.length;
-    document.getElementById('maskedFieldCount').textContent = transactions.length * 2;
-  }
-
-  // Simulated background monitoring
-  setInterval(() => {
-    if (Math.random() < 0.12) {
-      const msgs_bn = [
-        '[MONITOR] নিয়মিত চেইন যাচাই সম্পন্ন ✓',
-        '[SECURITY] ফায়ারওয়াল সক্রিয় — কোনো অস্বাভাবিক অ্যাক্সেস নেই',
-        '[PII-VAULT] সমস্ত এনক্রিপ্টেড রেকর্ড অক্ষত',
-        '[HEARTBEAT] সিস্টেম স্বাস্থ্য: ১০০%',
-      ];
-      const msgs_en = [
-        '[MONITOR] Routine chain verification complete ✓',
-        '[SECURITY] Firewall active — no anomalous access',
-        '[PII-VAULT] All encrypted records intact',
-        '[HEARTBEAT] System health: 100%',
-      ];
-      const msgs = currentLang === 'bn' ? msgs_bn : msgs_en;
-      addLog(msgs[Math.floor(Math.random() * msgs.length)], 'info');
-    }
-  }, 8000);
-}
-
-init();
+// ═══ INIT ═══
+(function init(){
+  addLog('[BOOT] Al-Amanah AI Guard v2.1 — Starting...','li2');
+  setTimeout(()=>addLog('[MODULE] SHA-256 Hash Engine → ACTIVE','li2'),300);
+  setTimeout(()=>addLog('[MODULE] AES-256 PII Vault → SEALED','lgo'),600);
+  setTimeout(()=>addLog('[MODULE] AI Risk Scoring Engine → READY','li2'),900);
+  setTimeout(()=>addLog('[MODULE] QR Transparency Generator → LOADED','li2'),1200);
+  setTimeout(()=>addLog('[MODULE] Donation Journey Tracker → ONLINE','li2'),1500);
+  setTimeout(()=>addLog('[SYSTEM] ✓ All modules operational. Zero threats.','lgo'),1900);
+  if(txns.length){updateStats();renderLedger();const lt=txns[txns.length-1];makeQR(lt);showBenef(lt.cat);addLog(`[RESTORE] ${txns.length} ${lang==='bn'?'পুরনো ট্রানজ্যাকশন পুনরুদ্ধার':'transactions restored'}`,'lgo');}
+  setInterval(()=>{if(Math.random()<.1){const m_bn=['[HEARTBEAT] সিস্টেম স্বাস্থ্য ১০০% ✓','[MONITOR] নিয়মিত চেইন যাচাই সম্পন্ন ✓','[SECURITY] ফায়ারওয়াল সক্রিয় ✓','[PII] সমস্ত রেকর্ড অক্ষত ✓'];const m_en=['[HEARTBEAT] System health 100% ✓','[MONITOR] Chain verification OK ✓','[SECURITY] Firewall active ✓','[PII] All records intact ✓'];addLog((lang==='bn'?m_bn:m_en)[Math.floor(Math.random()*4)],'li2');}},7000);
+})();
 </script>
 </body>
 </html>
