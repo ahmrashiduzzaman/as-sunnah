@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>আল-আমানাহ এআই গার্ড | Al-Amanah AI Guard</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
 :root{
   --bg:#050a08;--bg2:#081210;--card:#0d1f18;
@@ -488,7 +488,7 @@ select.fi option{background:var(--bg2);}
           <div class="ph"><span class="pt" id="ptQR">স্বচ্ছতা QR কোড</span><span class="pb pbo">স্ক্যান করুন</span></div>
           <div class="pbd">
             <div class="qrw">
-              <div class="qrc" id="qrBox"><span style="font-size:10px;color:#888;font-family:monospace;text-align:center;">ডোনেশনের পর<br>QR তৈরি হবে</span></div>
+              <div class="qrc" id="qrBox"><span style="font-size:10px;color:#888;font-family:monospace;text-align:center;line-height:1.5;">ডোনেশনের পর<br>QR তৈরি হবে</span></div>
               <div class="qri" id="qrInfo" style="display:none;">
                 <div class="qrr"><span class="qrk">রেফ:</span><span class="qrv" id="qRef">—</span></div>
                 <div class="qrr"><span class="qrk">খাত:</span><span class="qrv" id="qCat">—</span></div>
@@ -696,10 +696,19 @@ function typeRep(text){
 
 // ═══ QR ═══
 function makeQR(tx){
-  const data=`AS-SUNNAH\nRef:ASF-${tx.id}\nAmt:BDT ${tx.amt}\nCat:${tx.cat}\nDate:${tx.date}\nHash:${tx.hash.slice(0,14)}\nStatus:VERIFIED`;
-  const box=document.getElementById('qrBox');box.innerHTML='';
-  try{new QRCode(box,{text:data,width:96,height:96,colorDark:'#1b5e20',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}
-  catch(e){box.innerHTML=`<div style="font-size:9px;color:#1b5e20;font-family:monospace;text-align:center;">ASF-${tx.id}<br>✓ VERIFIED</div>`;}
+  // Build compact data string for QR
+  const data=`ASF-${tx.id}|${tx.cat}|BDT${tx.amt}|${tx.date}|${tx.hash.slice(0,12)}|VERIFIED`;
+  // Use QR Server API — reliable, no library needed
+  const encoded=encodeURIComponent(data);
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encoded}&color=1b5e20&bgcolor=ffffff&margin=4&format=png`;
+  const box=document.getElementById('qrBox');
+  box.innerHTML=`
+    <img src="${qrUrl}" 
+         width="100" height="100" 
+         style="border-radius:4px;display:block;"
+         alt="QR Code ASF-${tx.id}"
+         onerror="this.parentElement.innerHTML='<div style=\'font-size:9px;color:#1b5e20;font-family:monospace;text-align:center;padding:8px;\'>ASF-${tx.id}<br><br>✓ VERIFIED<br><br>${tx.cat}</div>'"
+    />`;
   document.getElementById('qRef').textContent='ASF-'+tx.id;
   document.getElementById('qCat').textContent=tx.cat;
   document.getElementById('qAmt').textContent='৳'+tx.amt.toLocaleString();
